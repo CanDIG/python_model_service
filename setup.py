@@ -6,10 +6,10 @@
 from setuptools import setup, find_packages
 
 requirements = [ ]
-
 setup_requirements = ['pytest-runner', ]
-
 test_requirements = ['pytest', ]
+
+data_files = [('api', ['python_model_service/api/swagger.yaml'])]
 
 setup(
     author="Jonathan Dursi",
@@ -37,6 +37,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
+    data_files=data_files,
     url='https://github.com/ljdursi/python_model_service',
     version='0.1.0',
     zip_safe=False,

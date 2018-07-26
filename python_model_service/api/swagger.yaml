@@ -13,7 +13,7 @@ swagger: "2.0"
 paths:
   /variants:
     get:
-      operationId: main.get_variants
+      operationId: python_model_service.api.get_variants
       summary: Get all variants within genomic range
       parameters:
         - name: chromosome
@@ -39,8 +39,8 @@ paths:
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
-    post:
-      operationId: main.post_variant
+    put:
+      operationId: python_model_service.api.put_variant
       summary: Add a variant to the database
       parameters:
         - name: variant
