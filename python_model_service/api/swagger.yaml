@@ -1,0 +1,184 @@
+consumes:
+- application/json
+info:
+  description: From Jonathan Dursi's OpenAPI tutorial
+  title: A barebones service for variant calls
+  version: 1.0.0
+paths: {}
+produces:
+- application/json
+schemes:
+- http
+swagger: "2.0"
+paths:
+  /variants:
+    get:
+      operationId: main.get_variants
+      summary: Get all variants within genomic range
+      parameters:
+        - name: chromosome
+          in: query
+          type: string
+          pattern: "^[a-zA-Z0-9]*$"
+        - name: start
+          in: query
+          type: integer
+          minimum: 1
+        - name: end
+          in: query
+          type: integer
+          minimum: 1
+      responses:
+        200:
+          description: Return variants
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Variant'
+        500:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      operationId: main.post_variant
+      summary: Add a variant to the database
+      parameters:
+        - name: variant
+          in: body
+          schema:
+            $ref: '#/definitions/Variant'
+      responses:
+        # TODO Add error code 
+        201:
+          description: New variant created
+          schema:
+            $ref: "#/definitions/Variant"
+          headers:
+            Location:
+              type: string
+        400:
+          description: Variant provided in body does not pass schema validation
+          schema:
+            $ref: "#/definitions/Error"
+        405:
+          description: Forbidden to overwrite variant in put
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Internal error - Variant not created
+          schema:
+            $ref: "#/definitions/Error"
+definitions:
+  Error:
+    type: object
+    required:
+      - message
+    properties: 
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+  Individual:
+    type: object
+    required:
+      - description
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Unique internal identifier
+        # TODO should we be scarmbling this uuid 
+        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+        readOnly: true
+      created:
+        type: string
+        format: date-time
+        description: Creation time
+        example: "2017-07-21T17:32:28Z"
+        readOnly: true
+      description:
+        type: string
+        description: Description of subject (may be external identifier)
+        example: "Subject 17"
+        minLength: 1
+        maxLength: 100
+  Call:
+    type: object
+    required:
+      - individual_id
+      - variant_id
+      - genotype
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Unique internal identifier
+        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+        readOnly: true
+      created:
+        type: string
+        format: date-time
+        description: Creation time
+        example: "2017-07-21T17:32:28Z"
+        readOnly: true
+      individual_id:
+        type: integer
+        format: int64
+        description: Unique internal identifier for the subject
+        example: 123
+      variant_id:
+        type: integer
+        format: int64
+        description: Unique internal identifier for the variant
+        example: 123
+      genotype:
+        type: string
+        description: Called genotype
+        example: "0/1"
+      format:
+        type: string
+        description: Additional call information
+        example: "GQ:DP:HQ 48:1:51,51"
+        minLength: 0
+        maxLength: 100
+        default: ""
+  Variant:
+    type: object
+    required:
+      - chromosome
+      - start
+      - ref
+      - alt
+    properties:
+      id:
+        type: string
+        format: uuid
+        description: Unique internal identifier
+        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+        readOnly: true
+      name:
+        type: string
+        description: Variant name, if any
+        example: "rs6054257"
+        minLength: 0
+        maxLength: 100
+        default: ""
+      chromosome:
+        type: string
+        description: Chromosome that the variant occurs on
+        example: "chr1"
+        minLength: 1
+        maxLength: 10
+      start:
+        type: integer
+        description: Beginning location of variant
+        example: 14370
+      ref:
+        type: string
+        description: Reference bases
+        example: "G"
+      alt:
+        type: string
+        description: Alternate (variant) bases
+        example: "A"
