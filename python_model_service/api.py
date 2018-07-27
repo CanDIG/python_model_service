@@ -3,16 +3,14 @@
 """
 Front end of Individual/Variant/Call API example
 """
-import os
 import datetime
 import logging
 
-import connexion
 from connexion import NoContent
 
 from sqlalchemy import and_
-import orm
-
+import python_model_service.orm as orm
+from python_model_service.__main__ import db_session
 
 def get_variants(chromosome, start, end):
     """
@@ -114,29 +112,3 @@ def get_individuals_by_variant(variant_id):
 
     individuals = [call.individual for call in var.calls if call.individual is not None]
     return [orm.dump(i) for i in individuals], 200
-
-
-logging.basicConfig(level=logging.INFO)
-
-db_filename = "api.db"
-# delete db if already exists
-try:
-    os.remove(db_filename)
-except OSError:
-    pass
-db_session = orm.init_db('sqlite:///'+db_filename)
-app = connexion.FlaskApp(__name__)
-app.add_api('swagger.yaml')
-
-application = app.app
-
-@application.teardown_appcontext
-def shutdown_session(exception=None):
-    """
-    cleanup
-    """
-    db_session.remove()
-
-
-if __name__ == '__main__':
-    app.run(port=8080)
