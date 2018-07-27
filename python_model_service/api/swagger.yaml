@@ -1,15 +1,16 @@
-consumes:
-- application/json
+swagger: "2.0"
 info:
   description: From Jonathan Dursi's OpenAPI tutorial
   title: A barebones service for variant calls
   version: 1.0.0
-paths: {}
+
 produces:
+- application/json
+consumes:
 - application/json
 schemes:
 - http
-swagger: "2.0"
+
 paths:
   /variants:
     get:
