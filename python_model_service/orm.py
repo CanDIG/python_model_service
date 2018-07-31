@@ -8,6 +8,7 @@ Database layer for Individuals/Variants/Calls API
 """
 import os
 import uuid
+from tornado.options import options
 from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -114,6 +115,12 @@ def init_db(uri):
     Base.metadata.create_all(bind=engine)
     return db_session
 
+
+def get_session():
+    dbsession = init_db('sqlite:///' + options.dbfile)
+    return dbsession
+        
+db_session = get_session()
 
 #
 # test/example run
