@@ -2,7 +2,7 @@
 
 Based on Jonathan Dursi's [OpenAPI variant service demo](https://github.com/CanDIG/openapi_calls_example), this toy service demonstrates the go-swagger/pop stack with CanDIG API best practices.
 
-[![Build Status](https://travis-ci.org/CanDIG/go-model-service.svg?branch=master)](https://travis-ci.org/CanDIG/go-model-service)
+[![Build Status](https://travis-ci.org/CanDIG/python-model-service.svg?branch=master)](https://travis-ci.org/CanDIG/python-model-service)
 [![PyUp](https://pyup.io/repos/github/CanDIG/python_model_service/shield.svg)](https://pyup.io/repos/github/CanDIG/python_model_service/)
 
 ## Stack
