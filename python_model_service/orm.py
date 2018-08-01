@@ -21,7 +21,7 @@ def dump(obj):
     """
     rels = ["calls", "variant", "individual"]
     return dict([(k, v) for k, v in vars(obj).items()
-                 if not k.startswith('_') and not k in rels])
+                 if not k.startswith('_') and k not in rels])
 
 
 class Individual(Base):
@@ -93,23 +93,29 @@ if __name__ == "__main__":
     ind1 = Individual(id=1, description='Subject X')
     ind2 = Individual(id=7, description='Subject Y')
 
-    variant1 = Variant(id=1, name='rs699', chromosome='chr1', start=230710048, ref='C', alt='T')
-    variant2 = Variant(id=2, name='rs900', chromosome='chr1', start=218441563, ref='A', alt='T')
-    variant3 = Variant(id=3, name='rs5714', chromosome='chr1', start=53247055, ref='A', alt='G')
+    variant1 = Variant(id=1, name='rs699', chromosome='chr1',
+                       start=230710048, ref='C', alt='T')
+    variant2 = Variant(id=2, name='rs900', chromosome='chr1',
+                       start=218441563, ref='A', alt='T')
+    variant3 = Variant(id=3, name='rs5714', chromosome='chr1',
+                       start=53247055, ref='A', alt='G')
 
     call1 = Call(id=1, individual_id=1, variant_id=1, genotype='0/1')
     call2 = Call(id=2, individual_id=1, variant_id=2, genotype='0/0')
     call3 = Call(id=3, individual_id=7, variant_id=2, genotype='1/1')
     call4 = Call(id=4, individual_id=7, variant_id=3, genotype='0/1')
 
-    session.add_all([ind1, ind2, variant1, variant2, variant3, call1, call2, call3, call4])
+    session.add_all([ind1, ind2, variant1, variant2, variant3,
+                     call1, call2, call3, call4])
     session.commit()
 
     print([dump(call) for call in ind2.calls])
     print([dump(call) for call in variant2.calls])
 
-    ind1variants = [call.variant for call in ind1.calls if call.variant is not None]
+    ind1variants = [call.variant for call in ind1.calls
+                    if call.variant is not None]
     print([dump(v) for v in ind1variants])
 
-    variant2inds = [call.individual for call in variant2.calls if call.individual is not None]
+    variant2inds = [call.individual for call in variant2.calls
+                    if call.individual is not None]
     print([dump(i) for i in variant2inds])

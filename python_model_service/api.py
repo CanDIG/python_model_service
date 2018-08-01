@@ -7,17 +7,16 @@ import datetime
 import logging
 
 from connexion import NoContent
-
 from sqlalchemy import and_
 import python_model_service.orm as orm
 from python_model_service.__main__ import db_session
 
-def get_variants(chromosome, start, end):
+
+def get_variants(chrom, s, e):
     """
     Return all variants between [chrom, start) and (chrom, end]
     """
-    q = db_session.query(orm.Variant)
-    q = q.filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end))
+    q = db_session.query(orm.Variant).filter_by(chromosome=chrom).filter(and_(start >= s, start <= e))  # noqa501
     return [orm.dump(p) for p in q]
 
 
@@ -43,7 +42,9 @@ def put_variant(variant):
     """
     vid = variant['id'] if 'id' in variant else None
     if vid is not None:
-        if db_session.query(orm.Variant).filter(orm.Variant.id == vid).one_or_none():
+        if db_session.query(orm.Variant)\
+           .filter(orm.Variant.id == vid)\
+           .one_or_none():
             logging.info('Attempting to update existing variant %d..', vid)
             return NoContent, 405
 
@@ -60,7 +61,8 @@ def put_individual(individual):
     """
     iid = individual['id'] if 'id' in individual else None
     if iid is not None:
-        if db_session.query(orm.Individual).filter(orm.Individual.id == iid).one_or_none():
+        if db_session.query(orm.Individual)\
+           .filter(orm.Individual.id == iid).one_or_none():
             logging.info('Attempting to update individual %d..', iid)
             return NoContent, 405
 
@@ -93,7 +95,9 @@ def get_variants_by_individual(individual_id):
     Return variants that have been called in an individual
     """
     ind_id = individual_id
-    ind = db_session.query(orm.Individual).filter(orm.Individual.id == ind_id).one_or_none()
+    ind = db_session.query(orm.Individual)\
+        .filter(orm.Individual.id == ind_id)\
+        .one_or_none()
     if not ind:
         return [], 404
 
@@ -106,9 +110,12 @@ def get_individuals_by_variant(variant_id):
     Return variants that have been called in an individual
     """
     var_id = variant_id
-    var = db_session.query(orm.Variant).filter(orm.Variant.id == var_id).one_or_none()
+    var = db_session.query(orm.Variant)\
+        .filter(orm.Variant.id == var_id)\
+        .one_or_none()
     if not var:
         return [], 404
 
-    individuals = [call.individual for call in var.calls if call.individual is not None]
+    individuals = [call.individual for call in var.calls
+                   if call.individual is not None]
     return [orm.dump(i) for i in individuals], 200
