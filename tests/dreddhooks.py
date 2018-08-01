@@ -4,10 +4,6 @@ import dredd_hooks as hooks
 UUID_EXAMPLE="bf3ba75b-8dfe-4619-b832-31c4a087a589"
 response_stash = {}
 
-@hooks.after_each
-def write_name(transaction):
-    print(transaction['name'])
-
 @hooks.after("/individuals > Get all individuals > 200 > application/json")
 def save_individuals_response(transaction):
     parsed_body = json.loads(transaction['real']['body'])
