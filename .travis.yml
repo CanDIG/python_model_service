@@ -4,8 +4,14 @@ language: python
 python:
   - 3.6
   - 3.5
-  - 3.4
   - 2.7
+
+# cache the node stuff for dredd, otherwise everything takes forever:
+
+cache:
+  directories:
+    - node_modules
+    - .nvm
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
