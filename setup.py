@@ -5,7 +5,7 @@
 
 from setuptools import setup, find_packages
 
-requirements = [ ]
+requirements = []
 setup_requirements = ['pytest-runner', ]
 test_requirements = ['pytest', ]
 
@@ -39,7 +39,7 @@ setup(
     tests_require=test_requirements,
     data_files=data_files,
     url='https://github.com/ljdursi/python_model_service',
-    version='0.1.0',
+    version='0.1.1',
     zip_safe=False,
     entry_points={
         'console_scripts': [

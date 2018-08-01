@@ -30,9 +30,11 @@ def main(args=None):
     define("dbfile", default=args.database)
 
     # configure logging
-    numeric_loglevel = getattr(logging, args.loglevel.upper())
     log_handler = logging.FileHandler(args.logfile)
-    log_handler.setLevel(numeric_loglevel)
+    numeric_loglevel = getattr(logging, args.loglevel.upper())
+    app.app.logger = logging.getLogger('python_model_service')
+    app.app.logger.addHandler(log_handler)
+    app.app.logger.setLevel(numeric_loglevel)
 
     # add the swagger APIs
     api_def = pkg_resources.resource_filename('python_model_service',
