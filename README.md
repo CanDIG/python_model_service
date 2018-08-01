@@ -1,16 +1,17 @@
 # Python Model Service
 
-Based on Jonathan Dursi's [OpenAPI variant service demo](https://github.com/CanDIG/openapi_calls_example), this toy service demonstrates the go-swagger/pop stack with CanDIG API best practices.
+Based on a CanDIG [OpenAPI variant service demo](https://github.com/CanDIG/openapi_calls_example), this toy service demonstrates the Python OpenAPI stack with CanDIG API best practices.
 
 [![Build Status](https://travis-ci.org/CanDIG/python_model_service.svg?branch=master)](https://travis-ci.org/CanDIG/python_model_service)
 [![PyUp](https://pyup.io/repos/github/CanDIG/python_model_service/shield.svg)](https://pyup.io/repos/github/CanDIG/python_model_service/)
 
 ## Stack
 
-- [Sqlite3](https://www.sqlite.org/index.html) database backend
-- [SQLAlchemy](http://sqlalchemy.org)
+- [SQLAlchemy](http://sqlalchemy.org), using [Sqlite3](https://www.sqlite.org/index.html)
 - [Connexion](https://github.com/zalando/connexion)
-- Python3
+- Python 3
+- Pytest, tox
+- Travis-CI
 
 ## Installation
 
