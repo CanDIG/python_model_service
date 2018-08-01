@@ -3,7 +3,9 @@
 
 """Tests for `python_model_service` package."""
 
-import pytest
+import subprocess
 
-def test_service():
-    """Run dredd on 
+
+def test_dredd():
+    subprocess.check_call(['dredd', '--hookfiles=dreddhooks.py'],
+                          cwd='./tests')

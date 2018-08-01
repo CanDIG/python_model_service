@@ -1,17 +1,73 @@
-consumes:
-- application/json
+swagger: '2.0'
 info:
-  description: From Jonathan Dursi's OpenAPI tutorial
-  title: A barebones service for variant calls
-  version: 1.0.0
-paths: {}
+  title: Variants and Calls API demo
+  version: "0.1"
+consumes:
+  - application/json
 produces:
-- application/json
-schemes:
-- http
-swagger: "2.0"
+  - application/json
 paths:
+  /individuals:
+    post:
+      operationId: python_model_service.api.post_individual
+      summary: Add an individual to the database
+      parameters:
+        - name: individual
+          in: body
+          schema:
+            $ref: '#/definitions/Individual'
+            example:
+              description: "Subject 17"
+      responses:
+        201:
+          description: New individual created
+        400:
+          description: Variant provided in body does not pass schema validation
+          schema:
+            $ref: "#/definitions/Error"
+        405:
+          description: Forbidden to overwrite variant in post
+          schema:
+            $ref: "#/definitions/Error"
+        500:
+          description: Internal error - Variant not created
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: python_model_service.api.get_individuals
+      summary: Get all individuals
+      responses:
+        200:
+          description: Return individuals
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Individual'
+        500:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
   /variants:
+    post:
+      operationId: python_model_service.api.post_variant
+      summary: Add a variant to the database
+      parameters:
+        - name: variant
+          in: body
+          schema:
+            $ref: '#/definitions/Variant'
+            example:
+              name: "rs6054257"
+              chromosome: "chr1"
+              start: 14370
+              ref: "G"
+              alt: "A"
+      responses:
+        201:
+          description: New variant created
+        405:
+          description: Cannot overwrite variant
     get:
       operationId: python_model_service.api.get_variants
       summary: Get all variants within genomic range
@@ -20,14 +76,20 @@ paths:
           in: query
           type: string
           pattern: "^[a-zA-Z0-9]*$"
+          x-example: "chr1"
+          required: true
         - name: start
           in: query
           type: integer
           minimum: 1
+          x-example: 1
+          required: true
         - name: end
           in: query
           type: integer
           minimum: 1
+          x-example: 100000
+          required: true
       responses:
         200:
           description: Return variants
@@ -35,50 +97,112 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Variant'
-        500:
-          description: Internal error
-          schema:
-            $ref: "#/definitions/Error"
-    put:
-      operationId: python_model_service.api.put_variant
-      summary: Add a variant to the database
+            example: []
+
+  /calls:
+    post:
+      operationId: python_model_service.api.post_call
+      summary: Add a call to the database
       parameters:
-        - name: variant
+        - name: call
           in: body
           schema:
-            $ref: '#/definitions/Variant'
+            $ref: '#/definitions/Call'
+            example:
+              individual_id: bf3ba75b-8dfe-4619-b832-31c4a087a589
+              variant_id: bf3ba75b-8dfe-4619-b832-31c4a087a589
+              genotype: "0/1"
+              fmt: "GQ:DP:HQ 48:1:51,51"
       responses:
-        # TODO Add error code 
         201:
-          description: New variant created
-          schema:
-            $ref: "#/definitions/Variant"
-          headers:
-            Location:
-              type: string
-        400:
-          description: Variant provided in body does not pass schema validation
-          schema:
-            $ref: "#/definitions/Error"
+          description: New call created
         405:
-          description: Forbidden to overwrite variant in put
+          description: Cannot overwrite call
+    get:
+      operationId: python_model_service.api.get_calls
+      summary: Get all calls
+      responses:
+        200:
+          description: Return calls
           schema:
-            $ref: "#/definitions/Error"
-        500:
-          description: Internal error - Variant not created
+            type: array
+            items:
+              $ref: '#/definitions/Call'
+            example: []
+
+
+  /individuals/{individual_id}/variants:
+    get:
+      operationId: python_model_service.api.get_variants_by_individual
+      summary: Get variants called in an individual
+      parameters:
+        - $ref: '#/parameters/individual_id'
+      responses:
+        200:
+          description: Return individuals
           schema:
-            $ref: "#/definitions/Error"
+            type: array
+            items:
+              $ref: '#/definitions/Variant'
+        404:
+          description: Individual does not exist
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Variant'
+
+  /variants/{variant_id}/individuals:
+    get:
+      operationId: python_model_service.api.get_individuals_by_variant
+      summary: Get individuals with a given variant called
+      parameters:
+        - $ref: '#/parameters/variant_id'
+      responses:
+        200:
+          description: Return individuals
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Individual'
+            example: []
+        404:
+          description: Variant does not exist
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Variant'
+
+
+parameters:
+  variant_id:
+    name: variant_id
+    description: Variant unique identifier
+    in: path
+    type: string
+    format: uuid
+    x-example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+    required: true
+
+  individual_id:
+    name: individual_id
+    description: Individual unique identifier
+    in: path
+    type: string
+    format: uuid
+    x-example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+    required: true
+
+  call_id:
+    name: call_id
+    description: Call unique identifier
+    in: path
+    type: string
+    format: uuid
+    x-example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+    required: true
+
+
 definitions:
-  Error:
-    type: object
-    required:
-      - message
-    properties: 
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
   Individual:
     type: object
     required:
@@ -87,22 +211,22 @@ definitions:
       id:
         type: string
         format: uuid
-        description: Unique internal identifier
-        # TODO should we be scarmbling this uuid 
+        description: Unique identifier
         example: bf3ba75b-8dfe-4619-b832-31c4a087a589
         readOnly: true
+      description:
+        type: string
+        description: description of individual
+        example: "Subject 17"
+        minLength: 1
+        maxLength: 100
       created:
         type: string
         format: date-time
         description: Creation time
-        example: "2017-07-21T17:32:28Z"
+        example: "2015-07-07T15:49:51.230+02:00"
         readOnly: true
-      description:
-        type: string
-        description: Description of subject (may be external identifier)
-        example: "Subject 17"
-        minLength: 1
-        maxLength: 100
+
   Call:
     type: object
     required:
@@ -111,38 +235,37 @@ definitions:
       - genotype
     properties:
       id:
+        description: Unique identifier
         type: string
         format: uuid
-        description: Unique internal identifier
         example: bf3ba75b-8dfe-4619-b832-31c4a087a589
         readOnly: true
-      created:
-        type: string
-        format: date-time
-        description: Creation time
-        example: "2017-07-21T17:32:28Z"
-        readOnly: true
       individual_id:
-        type: integer
-        format: int64
-        description: Unique internal identifier for the subject
-        example: 123
+        type: string
+        format: uuid
+        description: Unique identifier of individual
+        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
       variant_id:
-        type: integer
-        format: int64
-        description: Unique internal identifier for the variant
-        example: 123
+        description: Unique identifier of variant
+        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
       genotype:
         type: string
         description: Called genotype
         example: "0/1"
-      format:
+      fmt:
         type: string
         description: Additional call information
         example: "GQ:DP:HQ 48:1:51,51"
         minLength: 0
         maxLength: 100
         default: ""
+      created:
+        type: string
+        format: date-time
+        description: Creation time
+        example: "2015-07-07T15:49:51.230+02:00"
+        readOnly: true
+
   Variant:
     type: object
     required:
@@ -152,27 +275,25 @@ definitions:
       - alt
     properties:
       id:
-        type: string
-        format: uuid
-        description: Unique internal identifier
+        description: Unique identifier
         example: bf3ba75b-8dfe-4619-b832-31c4a087a589
         readOnly: true
       name:
         type: string
-        description: Variant name, if any
+        description: variant name if any
         example: "rs6054257"
         minLength: 0
         maxLength: 100
         default: ""
       chromosome:
         type: string
-        description: Chromosome that the variant occurs on
+        description: Chromosome variant occurs on
         example: "chr1"
         minLength: 1
         maxLength: 10
       start:
         type: integer
-        description: Beginning location of variant
+        description: Beginning location of variant (1-indexed, like VCF)
         example: 14370
       ref:
         type: string
@@ -180,5 +301,16 @@ definitions:
         example: "G"
       alt:
         type: string
-        description: Alternate (variant) bases
+        description: Alternate (variant) vases
         example: "A"
+
+  Error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
