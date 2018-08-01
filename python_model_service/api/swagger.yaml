@@ -97,7 +97,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Variant'
-
+            example: []
 
   /calls:
     post:
@@ -128,6 +128,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Call'
+            example: []
 
 
   /individuals/{individual_id}/variants:
@@ -163,6 +164,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Individual'
+            example: []
         404:
           description: Variant does not exist
           schema:

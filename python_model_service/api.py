@@ -12,12 +12,12 @@ from sqlalchemy import and_
 import python_model_service.orm as orm
 
 
-def get_variants(chrom, s, e):
+def get_variants(chromosome, start, end):
     """
     Return all variants between [chrom, start) and (chrom, end]
     """
     db_session = orm.get_session()
-    q = db_session.query(orm.Variant).filter_by(chromosome=chrom).filter(and_(start >= s, start <= e)) # noqa501
+    q = db_session.query(orm.Variant).filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end)) # noqa501
     return [orm.dump(p) for p in q]
 
 
