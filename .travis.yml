@@ -11,7 +11,7 @@ python:
 install: 
   - pip install -r requirements.txt
   - pip install -U tox-travis
-  - apt-get install -y nodejs npm # for dredd
+  - sudo apt-get install -y nodejs npm # for dredd
   - npm install -g dredd
 
 # Command to run tests, e.g. python setup.py test
