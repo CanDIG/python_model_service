@@ -15,7 +15,8 @@ cache:
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
   - pip install -r requirements.txt
-  - pip install -U tox-travis dredd_hooks
+  - pip install -r requirements_dev.txt
+  - pip install -U tox-travis
   - sudo apt-get install -y nodejs npm # for dredd
   - npm install -g dredd
 
