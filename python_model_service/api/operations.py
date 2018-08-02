@@ -5,13 +5,13 @@ Front end of Individual/Variant/Call API example
 import datetime
 import uuid
 import logging
-import sys
 
 from connexion import NoContent
 from sqlalchemy import and_
 import python_model_service.orm as orm
 from python_model_service.api.logging import apilog
 from python_model_service.api.logging import structured_log as struct_log
+from python_model_service.api.models import Error
 
 
 @apilog
@@ -33,11 +33,10 @@ def get_one_variant(variant_id):
     db_session = orm.get_session()
     q = db_session.query(orm.Variant).filter(orm.Variant.id == vid).one_or_none()  # noqa501
     if q:
-        print(q, file=sys.stderr)
-        print(orm.dump(q), file=sys.stderr)
         return orm.dump(q), 200
     else:
-        return NoContent, 404
+        err = Error(message="No variant found: "+str(vid), code=404)
+        return err, 404
 
 
 @apilog
@@ -61,7 +60,8 @@ def get_one_individual(individual_id):
     if q:
         return orm.dump(q), 200
     else:
-        return NoContent, 404
+        err = Error(message="No individual found: "+str(iid), code=404)
+        return err, 404
 
 
 @apilog
@@ -85,7 +85,8 @@ def get_one_call(call_id):
     if q:
         return orm.dump(q), 200
     else:
-        return NoContent, 404
+        err = Error(message="No call found: "+str(cid), code=404)
+        return err, 404
 
 
 @apilog
@@ -117,7 +118,7 @@ def post_variant(variant):
         return NoContent, 405
 
     vid = uuid.uuid1()
-    logger.info(struct_log(action='variant_created', **variant, id=str(vid)))
+    logger.info(struct_log(action='variant_created', id=str(vid), **variant))
 
     variant['id'] = vid
     variant['created'] = datetime.datetime.utcnow()
@@ -145,7 +146,7 @@ def post_individual(individual):
 
     iid = uuid.uuid1()
     logger.info(struct_log(action='individual_created',
-                           **individual, id=str(iid)))
+                           id=str(iid), **individual))
     individual['id'] = iid
     individual['created'] = datetime.datetime.utcnow()
 
@@ -199,7 +200,8 @@ def get_variants_by_individual(individual_id):
         .filter(orm.Individual.id == ind_id)\
         .one_or_none()
     if not ind:
-        return [], 404
+        err = Error(message="No individual found: "+str(ind_id), code=404)
+        return err, 404
 
     variants = [call.variant for call in ind.calls if call.variant is not None]
     return [orm.dump(v) for v in variants], 200
@@ -216,7 +218,8 @@ def get_individuals_by_variant(variant_id):
         .filter(orm.Variant.id == var_id)\
         .one_or_none()
     if not var:
-        return [], 404
+        err = Error(message="No individual found: "+str(var_id), code=404)
+        return err, 404
 
     individuals = [call.individual for call in var.calls
                    if call.individual is not None]
