@@ -54,15 +54,13 @@ def post_variant(variant):
 
     # Does this variant already exist, by ID or by content?
     found_variant = False
-    if vid is not None and db_session.query(orm.Variant)\
-           .filter(orm.Variant.id == vid)\
-           .one_or_none():
+    if vid is not None and db_session.query(orm.Variant).filter(orm.Variant.id == vid).one_or_none():  # noqa501
         found_variant = True
     elif db_session.query(orm.Variant)\
-            .filter(and_(start=variant['start'],
-                         chromosome=variant['chromosome'],
-                         alt=variant['alt'],
-                         ref=variant['ref']))\
+            .filter_by(chromosome=variant['chromosome'])\
+            .filter(and_(orm.Variant.start == variant['start'],
+                         orm.Variant.alt == variant['alt'],
+                         orm.Variant.ref == variant['ref']))\
             .one_or_none():
         found_variant = True
 
@@ -125,7 +123,7 @@ def post_call(call):
     found_call = False
     if cid is not None and db_session.query(orm.Call).filter(orm.Call.id == cid).one_or_none():  # noqa501
         found_call = True
-    elif db_session.query(orm.Call).filter(and_(variant_id=vid, individual_id=iid)).one_or_none():  # noqa501
+    elif db_session.query(orm.Call).filter_by(variant_id = vid).filter(orm.Call.individual_id == iid).one_or_none():  # noqa501
         found_call = True
 
     if found_call:
@@ -134,10 +132,11 @@ def post_call(call):
                                   code=405,
                                   **call))
         return NoContent, 405
-    else:
-        call['id'] = uuid.uuid1()
 
-    logger.info(struct_log(action='call_post', status='created', **call))
+    cid = uuid.uuid1()
+    logger.info(struct_log(action='call_post', status='created', id=str(cid), **call))  # noqa501
+
+    call['id'] = cid
     call['created'] = datetime.datetime.utcnow()
     db_session.add(orm.Call(**call))
     db_session.commit()
