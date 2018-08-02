@@ -7,8 +7,10 @@ Based on a CanDIG [OpenAPI variant service demo](https://github.com/CanDIG/opena
 
 ## Stack
 
-- [SQLAlchemy](http://sqlalchemy.org), using [Sqlite3](https://www.sqlite.org/index.html)
-- [Connexion](https://github.com/zalando/connexion)
+- [Connexion](https://github.com/zalando/connexion) for implementing the API
+- [SQLAlchemy](http://sqlalchemy.org), using [Sqlite3](https://www.sqlite.org/index.html) for ORM
+- [Bravado-core](https://github.com/Yelp/bravado-core) for Python classes from the spec
+- [Dredd](https://dredd.readthedocs.io/en/latest/) and [Dredd-Hooks-Python](https://github.com/apiaryio/dredd-hooks-python) for testing
 - Python 3
 - Pytest, tox
 - Travis-CI
