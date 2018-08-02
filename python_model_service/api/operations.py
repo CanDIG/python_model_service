@@ -10,6 +10,7 @@ from connexion import NoContent
 from sqlalchemy import and_
 import python_model_service.orm as orm
 from python_model_service.api.logging import apilog
+from python_model_service.api.logging import structured_log as struct_log
 
 
 @apilog
@@ -50,17 +51,32 @@ def post_variant(variant):
     db_session = orm.get_session()
     logger = logging.getLogger('python_model_service')
     vid = variant['id'] if 'id' in variant else None
-    if vid is not None:
-        if db_session.query(orm.Variant)\
+
+    # Does this variant already exist, by ID or by content?
+    found_variant = False
+    if vid is not None and db_session.query(orm.Variant)\
            .filter(orm.Variant.id == vid)\
            .one_or_none():
-            logger.info('Attempting to update existing variant %d..', vid)
-            return NoContent, 405
+        found_variant = True
+    elif db_session.query(orm.Variant)\
+            .filter(and_(start=variant['start'],
+                         chromosome=variant['chromosome'],
+                         alt=variant['alt'],
+                         ref=variant['ref']))\
+            .one_or_none():
+        found_variant = True
+
+    if found_variant:
+        logger.warning(struct_log(action='variant_post',
+                                  error='Attempting to update individual w post',
+                                  code=405,
+                                  **variant))
+        return NoContent, 405
     else:
         variant['id'] = uuid.uuid1()
 
-    logger.info('Creating variant...')
     variant['created'] = datetime.datetime.utcnow()
+    logger.info(struct_log(action='variant_created', **variant))
     db_session.add(orm.Variant(**variant))
     db_session.commit()
     return NoContent, 201
@@ -77,12 +93,15 @@ def post_individual(individual):
     if iid is not None:
         if db_session.query(orm.Individual)\
            .filter(orm.Individual.id == iid).one_or_none():
-            logger.info('Attempting to update individual %d..', iid)
+            logger.warning(struct_log(action='individual_post',
+                                      error='Attempting to update individual w post',
+                                      code=405,
+                                      **individual))
             return NoContent, 405
     else:
         individual['id'] = uuid.uuid1()
 
-    logger.info('Creating individual...')
+    logger.info(struct_log(action='individual_created', **individual))
     individual['created'] = datetime.datetime.utcnow()
     db_session.add(orm.Individual(**individual))
     db_session.commit()
@@ -97,17 +116,28 @@ def post_call(call):
     db_session = orm.get_session()
     logger = logging.getLogger('python_model_service')
     cid = call['id'] if 'id' in call else None
-    if cid is not None:
-        if db_session.query(orm.Call).filter(orm.Call.id == cid).one_or_none():
-            logger.info('Attempting to update call %d..', cid)
-            return NoContent, 405
+    vid = call['variant_id'] if 'variant_id' in call else None
+    iid = call['individual_id'] if 'individual_id' in call else None
+
+    found_call = False
+    if cid is not None and db_session.query(orm.Call).filter(orm.Call.id == cid).one_or_none():  # noqa501
+        found_call = True
+    elif db_session.query(orm.Call).filter(and_(variant_id=vid, individual_id=iid)).one_or_none():  # noqa501
+        found_call = True
+
+    if found_call:
+        logger.warning(struct_log(action='call_post',
+                                  error='Attempting to update call w post',
+                                  code=405,
+                                  **call))
+        return NoContent, 405
     else:
         call['id'] = uuid.uuid1()
 
+    logger.info(struct_log(action='call_post', status='created', **call))
     call['created'] = datetime.datetime.utcnow()
     db_session.add(orm.Call(**call))
     db_session.commit()
-    logger.info('Creating call...' + str(call))
     return NoContent, 201
 
 

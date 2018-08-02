@@ -10,6 +10,16 @@ from decorator import decorator
 from connexion import request
 
 
+def structured_log(**kwargs):
+    """
+    JSON string of keyword arguments
+    """
+    entrydict = {"timestamp": str(datetime.now())}
+    for key in kwargs:
+        entrydict[key] = kwargs[key]
+    return json.dumps(entrydict)
+
+
 @decorator
 def apilog(func, *args, **kwargs):
     """
