@@ -23,7 +23,7 @@ def save_variants_response(transaction):
 
 
 @hooks.after("/v1/calls > Get all calls > 200 > application/json")
-def save_variants_response(transaction):
+def save_calls_response(transaction):
     parsed_body = json.loads(transaction['real']['body'])
     ids = [item['id'] for item in parsed_body]
     response_stash['call_ids'] = ids
