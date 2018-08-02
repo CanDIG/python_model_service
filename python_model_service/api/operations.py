@@ -5,6 +5,7 @@ Front end of Individual/Variant/Call API example
 import datetime
 import uuid
 import logging
+import sys
 
 from connexion import NoContent
 from sqlalchemy import and_
@@ -20,7 +21,23 @@ def get_variants(chromosome, start, end):
     """
     db_session = orm.get_session()
     q = db_session.query(orm.Variant).filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end)) # noqa501
-    return [orm.dump(p) for p in q]
+    return [orm.dump(p) for p in q], 200
+
+
+@apilog
+def get_one_variant(variant_id):
+    """
+    Return single variant object
+    """
+    vid = variant_id
+    db_session = orm.get_session()
+    q = db_session.query(orm.Variant).filter(orm.Variant.id == vid).one_or_none()  # noqa501
+    if q:
+        print(q, file=sys.stderr)
+        print(orm.dump(q), file=sys.stderr)
+        return orm.dump(q), 200
+    else:
+        return NoContent, 404
 
 
 @apilog
@@ -34,6 +51,20 @@ def get_individuals():
 
 
 @apilog
+def get_one_individual(individual_id):
+    """
+    Return single individual object
+    """
+    iid = individual_id
+    db_session = orm.get_session()
+    q = db_session.query(orm.Individual).filter(orm.Individual.id == iid).one_or_none()  # noqa501
+    if q:
+        return orm.dump(q), 200
+    else:
+        return NoContent, 404
+
+
+@apilog
 def get_calls():
     """
     Return all calls
@@ -41,6 +72,20 @@ def get_calls():
     db_session = orm.get_session()
     q = db_session.query(orm.Call)
     return [orm.dump(p) for p in q.all()], 200
+
+
+@apilog
+def get_one_call(call_id):
+    """
+    Return single call object
+    """
+    cid = call_id
+    db_session = orm.get_session()
+    q = db_session.query(orm.Call).filter(orm.Call.id == cid).one_or_none()  # noqa501
+    if q:
+        return orm.dump(q), 200
+    else:
+        return NoContent, 404
 
 
 @apilog
@@ -66,7 +111,7 @@ def post_variant(variant):
 
     if found_variant:
         logger.warning(struct_log(action='variant_post',
-                                  error='Attempting to update individual w post',
+                                  error='Attempt to update object w post',
                                   code=405,
                                   **variant))
         return NoContent, 405
@@ -74,11 +119,11 @@ def post_variant(variant):
     vid = uuid.uuid1()
     logger.info(struct_log(action='variant_created', **variant, id=str(vid)))
 
-    variant['id'] = uuid.uuid1()
+    variant['id'] = vid
     variant['created'] = datetime.datetime.utcnow()
     db_session.add(orm.Variant(**variant))
     db_session.commit()
-    return NoContent, 201
+    return variant, 201, {'Location': '/variants/'+str(vid)}
 
 
 @apilog
@@ -93,7 +138,7 @@ def post_individual(individual):
         if db_session.query(orm.Individual)\
            .filter(orm.Individual.id == iid).one_or_none():
             logger.warning(struct_log(action='individual_post',
-                                      error='Attempting to update individual w post',
+                                      error='Attempt to update object w post',
                                       code=405,
                                       **individual))
             return NoContent, 405
@@ -106,7 +151,7 @@ def post_individual(individual):
 
     db_session.add(orm.Individual(**individual))
     db_session.commit()
-    return NoContent, 201
+    return individual, 201, {'Location': '/individuals/'+str(iid)}
 
 
 @apilog
@@ -128,7 +173,7 @@ def post_call(call):
 
     if found_call:
         logger.warning(struct_log(action='call_post',
-                                  error='Attempting to update call w post',
+                                  error='Attempt to update call w post',
                                   code=405,
                                   **call))
         return NoContent, 405
@@ -140,7 +185,7 @@ def post_call(call):
     call['created'] = datetime.datetime.utcnow()
     db_session.add(orm.Call(**call))
     db_session.commit()
-    return NoContent, 201
+    return call, 201, {'Location': '/variants/'+str(iid)}
 
 
 @apilog

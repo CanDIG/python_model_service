@@ -1,11 +1,13 @@
 swagger: '2.0'
 info:
   title: Variants and Calls API demo
-  version: "0.1"
+  version: "1"
+basePath: /v1
 consumes:
   - application/json
 produces:
   - application/json
+
 paths:
   /individuals:
     post:
@@ -21,6 +23,12 @@ paths:
       responses:
         201:
           description: New individual created
+          schema:
+            $ref: "#/definitions/Individual"
+          headers:
+            Location:
+              type: string
+              format: url
         400:
           description: Variant provided in body does not pass schema validation
           schema:
@@ -41,8 +49,27 @@ paths:
           description: Return individuals
           schema:
             type: array
+            example: []
             items:
               $ref: '#/definitions/Individual'
+        500:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
+  /individuals/{individual_id}:
+    get:
+      operationId: python_model_service.api.operations.get_one_individual
+      summary: Get specific individual
+      parameters:
+        - $ref: '#/parameters/individual_id'
+      responses:
+        200:
+          description: Return individual
+          schema:
+            $ref: '#/definitions/Individual'
+        404:
+          description: Individual not found
         500:
           description: Internal error
           schema:
@@ -99,6 +126,24 @@ paths:
               $ref: '#/definitions/Variant'
             example: []
 
+  /variants/{variant_id}:
+    get:
+      operationId: python_model_service.api.operations.get_one_variant
+      summary: Get specific variant
+      parameters:
+        - $ref: '#/parameters/variant_id'
+      responses:
+        200:
+          description: Return variant
+          schema:
+            $ref: '#/definitions/Variant'
+        404:
+          description: Variant not found
+        500:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+
   /calls:
     post:
       operationId: python_model_service.api.operations.post_call
@@ -130,6 +175,23 @@ paths:
               $ref: '#/definitions/Call'
             example: []
 
+  /calls/{call_id}:
+    get:
+      operationId: python_model_service.api.operations.get_one_call
+      summary: Get specific call
+      parameters:
+        - $ref: '#/parameters/call_id'
+      responses:
+        200:
+          description: Return call
+          schema:
+            $ref: '#/definitions/Call'
+        404:
+          description: Call not found
+        500:
+          description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
 
   /individuals/{individual_id}/variants:
     get:
