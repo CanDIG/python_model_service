@@ -72,11 +72,12 @@ def post_variant(variant):
                                   code=405,
                                   **variant))
         return NoContent, 405
-    else:
-        variant['id'] = uuid.uuid1()
 
+    vid = uuid.uuid1()
+    logger.info(struct_log(action='variant_created', **variant, id=str(vid)))
+
+    variant['id'] = uuid.uuid1()
     variant['created'] = datetime.datetime.utcnow()
-    logger.info(struct_log(action='variant_created', **variant))
     db_session.add(orm.Variant(**variant))
     db_session.commit()
     return NoContent, 201
@@ -98,11 +99,13 @@ def post_individual(individual):
                                       code=405,
                                       **individual))
             return NoContent, 405
-    else:
-        individual['id'] = uuid.uuid1()
 
-    logger.info(struct_log(action='individual_created', **individual))
+    iid = uuid.uuid1()
+    logger.info(struct_log(action='individual_created',
+                           **individual, id=str(iid)))
+    individual['id'] = iid
     individual['created'] = datetime.datetime.utcnow()
+
     db_session.add(orm.Individual(**individual))
     db_session.commit()
     return NoContent, 201
