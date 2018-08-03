@@ -14,12 +14,9 @@ def save_individuals_response(transaction):
 
 @hooks.after("/v1/variants > Get all variants within genomic range > 200 > application/json")
 def save_variants_response(transaction):
-    print("IN SAVE VARIANTS RESPONSE")
     parsed_body = json.loads(transaction['real']['body'])
     ids = [item['id'] for item in parsed_body]
-    print(ids)
     response_stash['variant_ids'] = ids
-    print(response_stash)
 
 
 @hooks.after("/v1/calls > Get all calls > 200 > application/json")
@@ -50,5 +47,7 @@ def insert_vall_id(transaction):
 @hooks.before("/v1/individuals/{individual_id} > Get specific individual > 404 > application/json")
 @hooks.before("/v1/variants/{variant_id} > Get specific variant > 404 > application/json")
 @hooks.before("/v1/calls/{call_id} > Get specific call > 404 > application/json")
+@hooks.before("/v1/individuals/{individual_id}/variants > Get variants called in an individual > 404 > application/json")
+@hooks.before("/v1/variants/{variant_id}/individuals > Get individuals with a given variant called > 404 > application/json")
 def let_pass(transaction):
     transaction['skip'] = False

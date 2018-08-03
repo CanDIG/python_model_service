@@ -21,7 +21,7 @@ paths:
             example:
               description: "Subject 17"
       responses:
-        201:
+        "201":
           description: New individual created
           schema:
             $ref: "#/definitions/Individual"
@@ -29,15 +29,15 @@ paths:
             Location:
               type: string
               format: url
-        400:
+        "400":
           description: Variant provided in body does not pass schema validation
           schema:
             $ref: "#/definitions/Error"
-        405:
+        "405":
           description: Forbidden to overwrite variant in post
           schema:
             $ref: "#/definitions/Error"
-        500:
+        "500":
           description: Internal error - Variant not created
           schema:
             $ref: "#/definitions/Error"
@@ -45,14 +45,14 @@ paths:
       operationId: python_model_service.api.operations.get_individuals
       summary: Get all individuals
       responses:
-        200:
+        "200":
           description: Return individuals
           schema:
             type: array
             example: []
             items:
               $ref: '#/definitions/Individual'
-        500:
+        "500":
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
@@ -64,13 +64,15 @@ paths:
       parameters:
         - $ref: '#/parameters/individual_id'
       responses:
-        200:
+        "200":
           description: Return individual
           schema:
             $ref: '#/definitions/Individual'
-        404:
+        "404":
           description: Individual not found
-        500:
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
@@ -91,10 +93,18 @@ paths:
               ref: "G"
               alt: "A"
       responses:
-        201:
+        "201":
           description: New variant created
-        405:
+          schema:
+            $ref: "#/definitions/Variant"
+          headers:
+            Location:
+              type: string
+              format: url
+        "405":
           description: Cannot overwrite variant
+          schema:
+            $ref: "#/definitions/Error"
     get:
       operationId: python_model_service.api.operations.get_variants
       summary: Get all variants within genomic range
@@ -118,7 +128,7 @@ paths:
           x-example: 100000
           required: true
       responses:
-        200:
+        "200":
           description: Return variants
           schema:
             type: array
@@ -133,13 +143,13 @@ paths:
       parameters:
         - $ref: '#/parameters/variant_id'
       responses:
-        200:
+        "200":
           description: Return variant
           schema:
             $ref: '#/definitions/Variant'
-        404:
+        "404":
           description: Variant not found
-        500:
+        "500":
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
@@ -159,15 +169,23 @@ paths:
               genotype: "0/1"
               fmt: "GQ:DP:HQ 48:1:51,51"
       responses:
-        201:
+        "201":
           description: New call created
-        405:
+          schema:
+            $ref: "#/definitions/Call"
+          headers:
+            Location:
+              type: string
+              format: url
+        "405":
           description: Cannot overwrite call
+          schema:
+            $ref: "#/definitions/Error"
     get:
       operationId: python_model_service.api.operations.get_calls
       summary: Get all calls
       responses:
-        200:
+        "200":
           description: Return calls
           schema:
             type: array
@@ -182,13 +200,13 @@ paths:
       parameters:
         - $ref: '#/parameters/call_id'
       responses:
-        200:
+        "200":
           description: Return call
           schema:
             $ref: '#/definitions/Call'
-        404:
+        "404":
           description: Call not found
-        500:
+        "500":
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
@@ -200,18 +218,16 @@ paths:
       parameters:
         - $ref: '#/parameters/individual_id'
       responses:
-        200:
+        "200":
           description: Return individuals
           schema:
             type: array
             items:
               $ref: '#/definitions/Variant'
-        404:
+        "404":
           description: Individual does not exist
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Variant'
+            $ref: '#/definitions/Error'
 
   /variants/{variant_id}/individuals:
     get:
@@ -220,19 +236,17 @@ paths:
       parameters:
         - $ref: '#/parameters/variant_id'
       responses:
-        200:
+        "200":
           description: Return individuals
           schema:
             type: array
             items:
               $ref: '#/definitions/Individual'
             example: []
-        404:
+        "404":
           description: Variant does not exist
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Variant'
+            $ref: '#/definitions/Error'
 
 
 parameters:
@@ -370,6 +384,7 @@ definitions:
     type: object
     required:
       - message
+      - code
     properties:
       code:
         type: integer

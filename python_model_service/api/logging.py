@@ -6,8 +6,18 @@ Logging wrappers for api calls
 import logging
 import json
 from datetime import datetime
+from uuid import UUID
 from decorator import decorator
 from connexion import request
+
+
+class FieldEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, UUID):
+            return str(obj)
+        if isinstance(obj, datetime):
+            return str(obj)
+        return json.JSONEncoder.default(self, obj)
 
 
 def structured_log(**kwargs):
@@ -17,7 +27,7 @@ def structured_log(**kwargs):
     entrydict = {"timestamp": str(datetime.now())}
     for key in kwargs:
         entrydict[key] = kwargs[key]
-    return json.dumps(entrydict)
+    return json.dumps(entrydict, skipkeys=True, cls=FieldEncoder)
 
 
 @decorator
