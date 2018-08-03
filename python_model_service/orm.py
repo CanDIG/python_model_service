@@ -16,11 +16,13 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.types import TypeDecorator, CHAR
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.exc import SQLAlchemyError
 
 # from SQLAlchemy Docs
 # http://docs.sqlalchemy.org/en/rel_0_9/core/custom_types.html
 
 Base = declarative_base()
+ORMException = SQLAlchemyError
 
 
 class GUID(TypeDecorator):  # pylint: disable=abstract-method

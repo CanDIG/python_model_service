@@ -22,7 +22,7 @@ def get_variants(chromosome, start, end):
     logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(orm.Variant).filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end)) # noqa501
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='variant search failed',
                                 chromosome=chromosome, start=start, end=end,
                                 exception=str(e)))
@@ -43,7 +43,7 @@ def get_one_variant(variant_id):
     vid = variant_id
     try:
         q = db_session.query(orm.Variant).filter(orm.Variant.id == vid).one_or_none()  # noqa501
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='variant search failed',
                                 var_id=str(vid), exception=str(e)))
         err = Error(message="Internal error doing search", code=500)
@@ -65,7 +65,7 @@ def get_individuals():
     logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(orm.Individual)
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error listing individuals", code=500)
         logger.error(struct_log(action='individual listing failed',
                                 exception=str(e)))
@@ -84,7 +84,7 @@ def get_one_individual(individual_id):
     logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(orm.Individual).filter(orm.Individual.id == iid).one_or_none()  # noqa501
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='individual search failed',
                                 ind_id=str(iid), exception=str(e)))
         err = Error(message="Internal error doing search", code=500)
@@ -106,7 +106,7 @@ def get_calls():
     logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(orm.Call)
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error listing calls", code=500)
         logger.error(struct_log(action='call listing failed',
                                 exception=str(e)))
@@ -169,7 +169,7 @@ def post_variant(variant):
 
     try:
         found_variant = variant_exists(db_session, **variant)
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error searching for variant", code=500)
         logger.error(struct_log(action='DB error searching for variant',
                                 exception=str(e)))
@@ -188,7 +188,7 @@ def post_variant(variant):
 
     try:
         orm_variant = orm.Variant(**variant)
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='variant_conversion',
                                 status='could not convert to ORM object',
                                 exception=str(e), **variant))
@@ -198,7 +198,7 @@ def post_variant(variant):
     try:
         db_session.add(orm_variant)
         db_session.commit()
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='saving variant',
                                 status='could not write variant to DB',
                                 exception=str(e), **variant))
@@ -226,7 +226,7 @@ def post_individual(individual):
                                         code=405, **individual))
                 err = Error(code=405,
                             message="Attempt to update object with a POST")
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error searching for individual", code=500)
         logger.error(struct_log(action='DB error searching for variant',
                                 exception=str(e)))
@@ -238,7 +238,7 @@ def post_individual(individual):
 
     try:
         orm_ind = orm.Individual(**individual)
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='individual_conversion',
                                 status='could not convert to ORM object',
                                 exception=str(e), **individual))
@@ -248,7 +248,7 @@ def post_individual(individual):
     try:
         db_session.add(orm_ind)
         db_session.commit()
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='saving individual',
                                 status='could not write individual to DB',
                                 exception=str(e), **individual))
@@ -285,7 +285,7 @@ def post_call(call):
 
     try:
         found_call = call_exists(db_session, **call)
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error searching for call", code=500)
         logger.error(struct_log(action='DB error searching for call',
                                 exception=str(e)))
@@ -305,7 +305,7 @@ def post_call(call):
 
     try:
         orm_call = orm.Call(**call)
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='call_conversion',
                                 status='could not convert to ORM object',
                                 exception=str(e), **call))
@@ -315,7 +315,7 @@ def post_call(call):
     try:
         db_session.add(orm_call)
         db_session.commit()
-    except Exception as e:
+    except orm.ORMException as e:
         logger.error(struct_log(action='saving call',
                                 status='could not write call to DB',
                                 exception=str(e), **call))
@@ -339,7 +339,7 @@ def get_variants_by_individual(individual_id):
         ind = db_session.query(orm.Individual)\
             .filter(orm.Individual.id == ind_id)\
             .one_or_none()
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error searching for individual", code=500)
         logger.error(struct_log(action='DB error searching for individual',
                                 exception=str(e)))
@@ -351,7 +351,7 @@ def get_variants_by_individual(individual_id):
 
     try:
         variants = [call.variant for call in ind.calls if call.variant]
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error searching for variants", code=500)
         logger.error(struct_log(action='DB error searching for variants',
                                 exception=str(e)))
@@ -373,7 +373,7 @@ def get_individuals_by_variant(variant_id):
         var = db_session.query(orm.Variant)\
             .filter(orm.Variant.id == var_id)\
             .one_or_none()
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error searching for variant", code=500)
         logger.error(struct_log(action='DB error searching for variant',
                                 exception=str(e)))
@@ -386,7 +386,7 @@ def get_individuals_by_variant(variant_id):
     try:
         individuals = [call.individual for call in var.calls
                        if call.individual is not None]
-    except Exception as e:
+    except orm.ORMException as e:
         err = Error(message="DB error searching for individuals", code=500)
         logger.error(struct_log(action='DB error searching for individuals',
                                 exception=str(e)))
