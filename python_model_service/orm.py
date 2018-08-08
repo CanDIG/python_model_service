@@ -17,14 +17,14 @@ from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy.types import TypeDecorator, CHAR
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.exc import SQLAlchemyError
-
-# from SQLAlchemy Docs
-# http://docs.sqlalchemy.org/en/rel_0_9/core/custom_types.html
+import pytest
 
 Base = declarative_base()
 ORMException = SQLAlchemyError
 
 
+# from SQLAlchemy Docs
+# http://docs.sqlalchemy.org/en/rel_0_9/core/custom_types.html
 class GUID(TypeDecorator):  # pylint: disable=abstract-method
     """Platform-independent GUID type.
 
@@ -124,7 +124,8 @@ def get_session(uri=None):
     return db_session
 
 
-def test_orm_simple(db_filename="test.db"):  # pylint: disable=too-many-locals
+@pytest.fixture
+def simple_db(db_filename="ormtest.db"):  # pylint: disable=too-many-locals
     """
     Simple ORM check
     """
@@ -142,8 +143,9 @@ def test_orm_simple(db_filename="test.db"):  # pylint: disable=too-many-locals
 
     ind1 = Individual(id=ind_ids[0], description='Subject X')
     ind2 = Individual(id=ind_ids[1], description='Subject Y')
+    individuals = [ind1, ind2]
 
-    session.add_all([ind1, ind2])
+    session.add_all(individuals)
     session.commit()
 
     variant1 = Variant(id=var_ids[0], name='rs699', chromosome='chr1',
@@ -152,8 +154,9 @@ def test_orm_simple(db_filename="test.db"):  # pylint: disable=too-many-locals
                        start=218441563, ref='A', alt='T')
     variant3 = Variant(id=var_ids[2], name='rs5714', chromosome='chr1',
                        start=53247055, ref='A', alt='G')
+    variants = [variant1, variant2, variant3]
 
-    session.add_all([variant1, variant2, variant3])
+    session.add_all(variants)
     session.commit()
 
     call1 = Call(id=call_ids[0], individual_id=ind_ids[0],
@@ -164,8 +167,9 @@ def test_orm_simple(db_filename="test.db"):  # pylint: disable=too-many-locals
                  variant_id=var_ids[1], genotype='1/1')
     call4 = Call(id=call_ids[3], individual_id=ind_ids[1],
                  variant_id=var_ids[2], genotype='0/1')
+    calls = [call1, call2, call3, call4]
 
-    session.add_all([call1, call2, call3, call4])
+    session.add_all(calls)
     session.commit()
 
     print([dump(call) for call in ind2.calls])
@@ -179,6 +183,13 @@ def test_orm_simple(db_filename="test.db"):  # pylint: disable=too-many-locals
                     if call.individual is not None]
     print([dump(i) for i in variant2inds])
 
+    return individuals, variants, calls
+
+
+def test_orm_search_simple(db_filename="otest.db"):
+    inds, variants, calls = test_orm_create_simple(db_filename)
+    db_session = get_session("sqlite:///"+db_filename)
+
 
 if __name__ == "__main__":
-    test_orm_simple()
+    test_orm_search_simple()
