@@ -10,7 +10,7 @@ Database layer for Individuals/Variants/Calls API
 import os
 import uuid
 from tornado.options import options
-from sqlalchemy import Column, DateTime, String, Integer, ForeignKey
+from sqlalchemy import Column, DateTime, String, Integer, ForeignKey, UniqueConstraint
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, relationship
@@ -93,6 +93,10 @@ class Variant(Base):
     name = Column(String(100))
     created = Column(DateTime())
     calls = relationship("Call", back_populates="variant")
+    # chromosome, start, ref, alt _uniquely_ specifies a short variant
+    __table_args__ = (
+        UniqueConstraint("chromosome", "start", "ref", "alt")
+    )
 
 
 class Call(Base):
@@ -108,6 +112,10 @@ class Call(Base):
     genotype = Column(String(20))
     fmt = Column(String(100))
     created = Column(DateTime())
+    # a call is a _unique_ relationship between a variant and an individual
+    __table_args__ = (
+        UniqueConstraint("variant_id", "individual_id"),
+    )
 
 
 def get_session(uri=None):
@@ -124,10 +132,10 @@ def get_session(uri=None):
     return db_session
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def simple_db(db_filename="ormtest.db"):  # pylint: disable=too-many-locals
     """
-    Simple ORM check
+    Create a DB with a small number of objects for testing
     """
     # delete db if already exists
     try:
@@ -172,24 +180,96 @@ def simple_db(db_filename="ormtest.db"):  # pylint: disable=too-many-locals
     session.add_all(calls)
     session.commit()
 
-    print([dump(call) for call in ind2.calls])
-    print([dump(call) for call in variant2.calls])
-
-    ind1variants = [call.variant for call in ind1.calls
-                    if call.variant is not None]
-    print([dump(v) for v in ind1variants])
-
-    variant2inds = [call.individual for call in variant2.calls
-                    if call.individual is not None]
-    print([dump(i) for i in variant2inds])
-
-    return individuals, variants, calls
+    return individuals, variants, calls, db_filename
 
 
-def test_orm_search_simple(db_filename="otest.db"):
-    inds, variants, calls = test_orm_create_simple(db_filename)
-    db_session = get_session("sqlite:///"+db_filename)
+def test_search_calls(simple_db):
+    """
+    Perform simple call searches on the DB fixture
+    """
+    _, _, calls, dbname = simple_db()
+    db_session = get_session('sqlite:///'+dbname)
+
+    # Test simple call queries
+    # By ID:
+    for call in calls:
+        callquery = db_session.query(Call).filter(Call.id == call.id).all()
+        assert len(callquery) == 1
+        assert callquery[0] == call
+
+    # By individual + variant IDs
+    for call in calls:
+        callquery = db_session.query(Call).\
+                    filter_by(individual_id=call.indidual_id, variant_id=call.variant_id).all()
+        assert len(callquery) == 1
+        assert callquery[0] == call
+
+
+def test_search_variants(simple_db):
+    """
+    Perform simple variant searches on the DB fixture
+    """
+    _, variants, _, dbname = simple_db()
+    db_session = get_session('sqlite:///'+dbname)
+
+    # Test simple variant queries
+    # By ID:
+    for var in variants:
+        varquery = db_session.query(Variant).filter(Variant.id == var.id).all()
+        assert len(varquery) == 1
+        assert varquery[0] == var
+
+    # By chrom/start/ref/alt
+    for var in variants:
+        varquery = db_session.query(Variant).\
+                    filter_by(chromosome=var.chromosome, start=var.start,
+                              ref=var.ref, alt=var.alt).all()
+        assert len(varquery) == 1
+        assert varquery[0] == var
+
+
+def test_search_individuals(simple_db):
+    """
+    Perform simple individual searches on the DB fixture
+    """
+    inds, _, _, dbname = simple_db()
+    db_session = get_session('sqlite:///'+dbname)
+
+    # Test simple individual queries
+    # By ID:
+    for ind in inds:
+        indquery = db_session.query(Individual).filter(Individual.id == ind.id).all()
+        assert len(indquery) == 1
+        assert indquery[0] == ind
+
+
+def test_relationships(simple_db):
+    """
+    Test the individual <-> call <-> variant relationship
+    """
+    inds, variants, calls, dbname = simple_db()
+    db_session = get_session('sqlite:///'+dbname)
+
+    # note: currenly only testing relationship outwards from call
+    # TODO: add testing starting from individual and variant
+    for call in calls:
+        ormcalls = db_session.query(Call).filter_by(id=call.id).all()
+        assert len(ormcalls) == 1
+        ormcall = ormcalls[0]
+
+        assert ormcall.variant == call.variant
+        calledvar = [var for var in variants if var.id == call.variant_id][0]
+        assert ormcall.variant == calledvar
+        assert ormcall in calledvar.calls
+
+        assert ormcall.individual == call.individual
+        calledind = [ind for ind in inds if ind.id == call.individual_id]
+        assert ormcall.individual == calledind
+        assert ormcall in calledind.calls
 
 
 if __name__ == "__main__":
-    test_orm_search_simple()
+    test_search_calls(simple_db)
+    test_search_variants(simple_db)
+    test_search_individuals(simple_db)
+    test_relationships(simple_db)
