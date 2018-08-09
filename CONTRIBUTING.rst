@@ -12,10 +12,10 @@ You can contribute in many ways:
 Types of Contributions
 ----------------------
 
-Report Bugs
-~~~~~~~~~~~
+Report Bugs or feature requests
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Report bugs at https://github.com/ljdursi/python_model_service/issues.
+Report bugs at https://github.com/CanDIG/python_model_service/issues.
 
 If you are reporting a bug, please include:
 
@@ -45,14 +45,12 @@ articles, and such.
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
-The best way to send feedback is to file an issue at https://github.com/ljdursi/python_model_service/issues.
+The best way to send feedback is to file an issue at https://github.com/CanDIG/python_model_service/issues.
 
 If you are proposing a feature:
 
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
-* Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
 
 Get Started!
 ------------
@@ -102,8 +100,8 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 2.7, 3.4, 3.5 and 3.6, and for PyPy. Check
-   https://travis-ci.org/ljdursi/python_model_service/pull_requests
+3. The pull request should work for Python 3.5 and 3.6. Check
+   https://travis-ci.org/CanDIG/python_model_service/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
 Tips
