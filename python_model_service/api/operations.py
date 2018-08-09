@@ -1,4 +1,5 @@
 # pylint: disable=invalid-name
+# pylint: disable=C0301
 """
 Front end of Individual/Variant/Call API example
 """
@@ -7,7 +8,7 @@ import uuid
 import logging
 
 from sqlalchemy import and_
-import python_model_service.orm as orm
+from python_model_service import orm
 import python_model_service.orm.models
 from python_model_service.api.logging import apilog
 from python_model_service.api.logging import structured_log as struct_log
@@ -150,7 +151,7 @@ def variant_exists(db_session, id=None, chromosome=None, start=None,
     """
     if id is not None:
         if db_session.query(python_model_service.orm.models.Variant).filter(
-            python_model_service.orm.models.Variant.id == id).one_or_none():  # noqa501
+           python_model_service.orm.models.Variant.id == id).one_or_none():  # noqa501
             return True
     if db_session.query(python_model_service.orm.models.Variant).filter_by(chromosome=chromosome)\
        .filter(and_(python_model_service.orm.models.Variant.start == start, python_model_service.orm.models.Variant.alt == alt,
