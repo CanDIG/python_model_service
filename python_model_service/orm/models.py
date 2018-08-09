@@ -1,7 +1,8 @@
 """
 SQLAlchemy models for the database
 """
-from sqlalchemy import Column, String, DateTime, Integer, UniqueConstraint, ForeignKey, create_engine
+from sqlalchemy import Column, String, DateTime, Integer
+from sqlalchemy import UniqueConstraint, ForeignKey, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 from tornado.options import options

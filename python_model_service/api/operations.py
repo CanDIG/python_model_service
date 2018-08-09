@@ -271,8 +271,8 @@ def call_exists(db_session, id=None, variant_id=None, individual_id=None,
     Check to see if call exists, by ID if given or if by features if not
     """
     if id is not None:
-        if db_session.query(python_model_service.orm.models.Call).filter(
-            python_model_service.orm.models.Call.id == id).one_or_none():
+        if db_session.query(python_model_service.orm.models.Call)\
+           .filter(python_model_service.orm.models.Call.id == id).one_or_none():
             return True
     if db_session.query(python_model_service.orm.models.Call).filter_by(variant_id=variant_id)\
        .filter(python_model_service.orm.models.Call.individual_id == individual_id).one_or_none():

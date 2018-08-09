@@ -1,3 +1,6 @@
+"""
+Tests for ORM module
+"""
 import os
 import uuid
 

@@ -1,3 +1,7 @@
+# pylint: disable=no-else-return
+"""
+UUIDs for the database - from SQLAlchemy docs
+"""
 import uuid
 
 from sqlalchemy import TypeDecorator, CHAR
