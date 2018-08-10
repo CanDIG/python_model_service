@@ -5,14 +5,20 @@ Front end of Individual/Variant/Call API example
 """
 import datetime
 import uuid
-import logging
 
 from sqlalchemy import and_
 from python_model_service import orm
 import python_model_service.orm.models
-from python_model_service.api.logging import apilog
+from python_model_service.api.logging import apilog, logger
 from python_model_service.api.logging import structured_log as struct_log
 from python_model_service.api.models import Error
+
+
+def report_search_failed(typename, exception, **kwargs):
+    report = typename + ' search failed'
+    message = 'Internal error searching for '+typename+'s'
+    logger.error(struct_log(action=report, exception=str(exception), kwargs))
+    return Error(message=message, code=500)
 
 
 @apilog
@@ -21,14 +27,10 @@ def get_variants(chromosome, start, end):
     Return all variants between [chrom, start) and (chrom, end]
     """
     db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(python_model_service.orm.models.Variant).filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end)) # noqa501
     except orm.ORMException as e:
-        logger.error(struct_log(action='variant search failed',
-                                chromosome=chromosome, start=start, end=end,
-                                exception=str(e)))
-        err = Error(message="Internal error doing search", code=500)
+        err = report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
         return err, 500
 
     return [orm.dump(p) for p in q], 200
@@ -40,16 +42,12 @@ def get_one_variant(variant_id):
     Return single variant object
     """
     db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
-
     vid = variant_id
     try:
         q = db_session.query(python_model_service.orm.models.Variant).filter(
             python_model_service.orm.models.Variant.id == vid).one_or_none()  # noqa501
     except orm.ORMException as e:
-        logger.error(struct_log(action='variant search failed',
-                                var_id=str(vid), exception=str(e)))
-        err = Error(message="Internal error doing search", code=500)
+        err = report_search_failed('variant', e, var_id=str(vid))
         return err, 500
 
     if not q:
@@ -84,14 +82,11 @@ def get_one_individual(individual_id):
     """
     iid = individual_id
     db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(python_model_service.orm.models.Individual).filter(
             python_model_service.orm.models.Individual.id == iid).one_or_none()  # noqa501
     except orm.ORMException as e:
-        logger.error(struct_log(action='individual search failed',
-                                ind_id=str(iid), exception=str(e)))
-        err = Error(message="Internal error doing search", code=500)
+        err = report_search_failed('individual', e, ind_id=str(iid))
         return err, 500
 
     if not q:
@@ -107,13 +102,10 @@ def get_calls():
     Return all calls
     """
     db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(python_model_service.orm.models.Call)
     except orm.ORMException as e:
-        err = Error(message="DB error listing calls", code=500)
-        logger.error(struct_log(action='call listing failed',
-                                exception=str(e)))
+        err = report_search_failed('call', e)
         return err, 500
 
     return [orm.dump(p) for p in q.all()], 200
@@ -126,15 +118,11 @@ def get_one_call(call_id):
     """
     cid = call_id
     db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
     try:
         q = db_session.query(python_model_service.orm.models.Call).filter(
             python_model_service.orm.models.Call.id == cid).one_or_none()  # noqa501
     except Error as e:
-        logger.error(struct_log(action='variant search failed',
-                                call_id=str(cid),
-                                errno=e.errno, errmsg=e.strerror))
-        err = Error(message="Internal error doing search", code=500)
+        err = report_search_failed('call', e, call_id=str(cid))
         return err, 500
 
     if not q:
@@ -168,17 +156,12 @@ def post_variant(variant):
     Add a new variant
     """
     db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
-    vid = variant['id'] if 'id' in variant else None
 
     # Does this variant already exist, by ID or by content?
-
     try:
         found_variant = variant_exists(db_session, **variant)
     except orm.ORMException as e:
-        err = Error(message="DB error searching for variant", code=500)
-        logger.error(struct_log(action='DB error searching for variant',
-                                exception=str(e)))
+        err = report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
         return err
 
     if found_variant:
