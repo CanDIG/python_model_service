@@ -19,6 +19,14 @@ def save_variants_response(transaction):
     response_stash['variant_ids'] = ids
 
 
+@hooks.before("/v1/calls > Add a call to the database > 201 > application/json")
+def print_transaction(transaction):
+    request_body = json.loads(transaction['request']['body'])
+    request_body['individual_id'] = response_stash['individual_ids'][0]
+    request_body['variant_id'] = response_stash['variant_ids'][0]
+    transaction['request']['body'] = json.dumps(request_body)
+
+
 @hooks.after("/v1/calls > Get all calls > 200 > application/json")
 def save_calls_response(transaction):
     parsed_body = json.loads(transaction['real']['body'])
