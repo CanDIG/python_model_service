@@ -212,7 +212,7 @@ def call_exists(db_session, id=None, variant_id=None, individual_id=None, **kwar
         if db_session.query(orm.models.Call).filter_by(id=id).one_or_none():
             return True
     if db_session.query(orm.models.Call).\
-       filter_by(and_(variant_id == variant_id, individual_id == individual_id)).one_or_none():
+       filter(and_(variant_id == variant_id, individual_id == individual_id)).one_or_none():
         return True
 
     return False
