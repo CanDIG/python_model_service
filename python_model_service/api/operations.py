@@ -218,8 +218,7 @@ def call_exists(db_session, id=None, variant_id=None, individual_id=None, **kwar
     return False
 
 
-def individual_exists(db_session, id=None, variant_id=None, individual_id=None,
-                      **kwargs):
+def individual_exists(db_session, id=None, **kwargs):
     """
     Check to see if individual exists, by ID if given or if by features if not
     """
@@ -392,7 +391,7 @@ def get_individuals_by_variant(variant_id):
         return err, 500
 
     if not var:
-        err = Error(message="No variant found: "+str(var_id), code=404)
+        err = Error(message="No variant found: "+str(variant_id), code=404)
         return err, 404
 
     try:
