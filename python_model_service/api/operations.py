@@ -1,24 +1,80 @@
 # pylint: disable=invalid-name
 # pylint: disable=C0301
 """
-Front end of Individual/Variant/Call API example
+Implement endpoints of model service
 """
 import datetime
 import uuid
 
 from sqlalchemy import and_
 from python_model_service import orm
-import python_model_service.orm.models
 from python_model_service.api.logging import apilog, logger
 from python_model_service.api.logging import structured_log as struct_log
 from python_model_service.api.models import Error
 
 
-def report_search_failed(typename, exception, **kwargs):
+def _report_search_failed(typename, exception, **kwargs):
+    """
+    Generate standard log message + request error for error:
+    Internal error performing search
+
+    :param typename: name of type involved
+    :param exception: exception thrown by ORM
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
     report = typename + ' search failed'
     message = 'Internal error searching for '+typename+'s'
-    logger.error(struct_log(action=report, exception=str(exception), kwargs))
+    logger().error(struct_log(action=report, exception=str(exception), **kwargs))
     return Error(message=message, code=500)
+
+
+def _report_object_exists(typename, **kwargs):
+    """
+    Generate standard log message + request error for warning:
+    Trying to POST an object that already exists
+
+    :param typename: name of type involved
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = typename + ': Attempt to modify with a POST'
+    message = 'Attempt to modify '+typename+' with a POST'
+    logger().warning(struct_log(action=report, **kwargs))
+    return Error(message=message, code=405)
+
+
+def _report_conversion_error(typename, exception, **kwargs):
+    """
+    Generate standard log message + request error for warning:
+    Trying to POST an object that already exists
+
+    :param typename: name of type involved
+    :param exception: exception thrown by ORM
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = 'Could not convert '+typename+' to ORM model'
+    message = typename + ': failed validation - could not convert to internal representation'
+    logger().error(struct_log(action=report, exception=str(exception), **kwargs))
+    return Error(message=message, code=400)
+
+
+def _report_write_error(typename, exception, **kwargs):
+    """
+    Generate standard log message + request error for error:
+    Error writing to DB
+
+    :param typename: name of type involved
+    :param exception: exception thrown by ORM
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = 'Internal error writing '+typename+' to DB'
+    message = typename + ': internal error saving ORM object to DB'
+    logger().error(struct_log(action=report, exception=str(exception), **kwargs))
+    err = Error(message=message, code=500)
+    return err
 
 
 @apilog
@@ -26,11 +82,11 @@ def get_variants(chromosome, start, end):
     """
     Return all variants between [chrom, start) and (chrom, end]
     """
-    db_session = python_model_service.orm.models.get_session()
+    db_session = orm.models.get_session()
     try:
-        q = db_session.query(python_model_service.orm.models.Variant).filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end)) # noqa501
+        q = db_session.query(orm.models.Variant).filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end)) # noqa501
     except orm.ORMException as e:
-        err = report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
+        err = _report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
         return err, 500
 
     return [orm.dump(p) for p in q], 200
@@ -41,13 +97,13 @@ def get_one_variant(variant_id):
     """
     Return single variant object
     """
-    db_session = python_model_service.orm.models.get_session()
+    db_session = orm.models.get_session()
     vid = variant_id
     try:
-        q = db_session.query(python_model_service.orm.models.Variant).filter(
-            python_model_service.orm.models.Variant.id == vid).one_or_none()  # noqa501
+        q = db_session.query(orm.models.Variant).filter(
+            orm.models.Variant.id == vid).one_or_none()  # noqa501
     except orm.ORMException as e:
-        err = report_search_failed('variant', e, var_id=str(vid))
+        err = _report_search_failed('variant', e, var_id=str(vid))
         return err, 500
 
     if not q:
@@ -62,14 +118,11 @@ def get_individuals():
     """
     Return all individuals
     """
-    db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
+    db_session = orm.models.get_session()
     try:
-        q = db_session.query(python_model_service.orm.models.Individual)
+        q = db_session.query(orm.models.Individual)
     except orm.ORMException as e:
-        err = Error(message="DB error listing individuals", code=500)
-        logger.error(struct_log(action='individual listing failed',
-                                exception=str(e)))
+        err = _report_search_failed('individuals', e, ind_id="all")
         return err, 500
 
     return [orm.dump(p) for p in q.all()], 200
@@ -81,12 +134,12 @@ def get_one_individual(individual_id):
     Return single individual object
     """
     iid = individual_id
-    db_session = python_model_service.orm.models.get_session()
+    db_session = orm.models.get_session()
     try:
-        q = db_session.query(python_model_service.orm.models.Individual).filter(
-            python_model_service.orm.models.Individual.id == iid).one_or_none()  # noqa501
+        q = db_session.query(orm.models.Individual).filter(
+            orm.models.Individual.id == iid).one_or_none()  # noqa501
     except orm.ORMException as e:
-        err = report_search_failed('individual', e, ind_id=str(iid))
+        err = _report_search_failed('individual', e, ind_id=str(iid))
         return err, 500
 
     if not q:
@@ -101,11 +154,11 @@ def get_calls():
     """
     Return all calls
     """
-    db_session = python_model_service.orm.models.get_session()
+    db_session = orm.models.get_session()
     try:
-        q = db_session.query(python_model_service.orm.models.Call)
+        q = db_session.query(orm.models.Call)
     except orm.ORMException as e:
-        err = report_search_failed('call', e)
+        err = _report_search_failed('call', e, call_id='all')
         return err, 500
 
     return [orm.dump(p) for p in q.all()], 200
@@ -117,12 +170,12 @@ def get_one_call(call_id):
     Return single call object
     """
     cid = call_id
-    db_session = python_model_service.orm.models.get_session()
+    db_session = orm.models.get_session()
     try:
-        q = db_session.query(python_model_service.orm.models.Call).filter(
-            python_model_service.orm.models.Call.id == cid).one_or_none()  # noqa501
+        q = db_session.query(orm.models.Call).filter(
+            orm.models.Call.id == cid).one_or_none()  # noqa501
     except Error as e:
-        err = report_search_failed('call', e, call_id=str(cid))
+        err = _report_search_failed('call', e, call_id=str(cid))
         return err, 500
 
     if not q:
@@ -138,14 +191,42 @@ def variant_exists(db_session, id=None, chromosome=None, start=None,
     Check to see if variant exists, by ID if given or if by features if not
     """
     if id is not None:
-        if db_session.query(python_model_service.orm.models.Variant).filter(
-           python_model_service.orm.models.Variant.id == id).one_or_none():  # noqa501
+        if db_session.query(orm.models.Variant)\
+           .filter(orm.models.Variant.id == id).one_or_none():
             return True
-    if db_session.query(python_model_service.orm.models.Variant).filter_by(chromosome=chromosome)\
-       .filter(and_(python_model_service.orm.models.Variant.start == start, python_model_service.orm.models.Variant.alt == alt,
-                    python_model_service.orm.models.Variant.ref == ref))\
-       .one_or_none():
+    if db_session.query(orm.models.Variant).filter_by(chromosome=chromosome) \
+        .filter(and_(orm.models.Variant.start == start,
+                     orm.models.Variant.alt == alt,
+                     orm.models.Variant.ref == ref)) \
+        .one_or_none():
         return True
+
+    return False
+
+
+def call_exists(db_session, id=None, variant_id=None, individual_id=None, **kwargs):
+    """
+    Check to see if Call exists, by ID if given or if by features if not
+    """
+    if id is not None:
+        if db_session.query(orm.models.Call).filter_by(id=id).one_or_none():
+            return True
+    if db_session.query(orm.models.Call).\
+       filter_by(and_(variant_id == variant_id, individual_id == individual_id)).one_or_none():
+        return True
+
+    return False
+
+
+def individual_exists(db_session, id=None, variant_id=None, individual_id=None,
+                      **kwargs):
+    """
+    Check to see if individual exists, by ID if given or if by features if not
+    """
+    if id is not None:
+        if db_session.query(orm.models.Individual)\
+           .filter(orm.models.Individual.id == id).one_or_none():
+            return True
 
     return False
 
@@ -155,46 +236,38 @@ def post_variant(variant):
     """
     Add a new variant
     """
-    db_session = python_model_service.orm.models.get_session()
+    db_session = orm.models.get_session()
 
     # Does this variant already exist, by ID or by content?
     try:
         found_variant = variant_exists(db_session, **variant)
     except orm.ORMException as e:
-        err = report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
+        err = _report_search_failed('variant', e, **variant)
         return err
 
     if found_variant:
-        logger.error(struct_log(action='variant_post',
-                                status='Attempt to update object w post',
-                                **variant))
-        err = Error(message="Attempt to update object with a POST", code=405)
+        err = _report_object_exists('variant', **variant)
         return err, 405
 
     vid = uuid.uuid1()
     variant['id'] = vid
     variant['created'] = datetime.datetime.utcnow()
 
+    # convert to ORM representation
     try:
-        orm_variant = python_model_service.orm.models.Variant(**variant)
+        orm_variant = orm.models.Variant(**variant)
     except orm.ORMException as e:
-        logger.error(struct_log(action='variant_conversion',
-                                status='could not convert to ORM object',
-                                exception=str(e), **variant))
-        err = Error(message="Could not convert to ORM object", code=400)
+        err = _report_conversion_error('variant', e, **variant)
         return err, 400
 
     try:
         db_session.add(orm_variant)
         db_session.commit()
     except orm.ORMException as e:
-        logger.error(struct_log(action='saving variant',
-                                status='could not write variant to DB',
-                                exception=str(e), **variant))
-        err = Error(message="Could write not convert to ORM object", code=400)
+        err = _report_write_error('variant', e, **variant)
         return err, 400
 
-    logger.info(struct_log(action='variant_created', **variant))
+    logger().info(struct_log(action='variant_created', **variant))
     return variant, 201, {'Location': '/variants/'+str(vid)}
 
 
@@ -203,66 +276,37 @@ def post_individual(individual):
     """
     Add a new individual
     """
-    db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
-    iid = individual['id'] if 'id' in individual else None
+    db_session = orm.models.get_session()
     try:
-        if iid is not None:
-            if db_session.query(python_model_service.orm.models.Individual)\
-               .filter(python_model_service.orm.models.Individual.id == iid).one_or_none():
-                logger.error(struct_log(action='individual_post',
-                                        status='Attempt to update w post',
-                                        code=405, **individual))
-                err = Error(code=405,
-                            message="Attempt to update object with a POST")
+        found_individual = individual_exists(db_session, **individual)
     except orm.ORMException as e:
-        err = Error(message="DB error searching for individual", code=500)
-        logger.error(struct_log(action='DB error searching for variant',
-                                exception=str(e)))
+        err = _report_search_failed('variant', e, **individual)
         return err
+
+    if found_individual:
+        err = _report_object_exists('individual', **individual)
+        return err, 405
 
     iid = uuid.uuid1()
     individual['id'] = iid
     individual['created'] = datetime.datetime.utcnow()
 
     try:
-        orm_ind = python_model_service.orm.models.Individual(**individual)
+        orm_ind = orm.models.Individual(**individual)
     except orm.ORMException as e:
-        logger.error(struct_log(action='individual_conversion',
-                                status='could not convert to ORM object',
-                                exception=str(e), **individual))
-        err = Error(message="Could not convert to ORM object", code=400)
-        return err
+        err = _report_conversion_error('individual', e, **individual)
+        return err, 400
 
     try:
         db_session.add(orm_ind)
         db_session.commit()
     except orm.ORMException as e:
-        logger.error(struct_log(action='saving individual',
-                                status='could not write individual to DB',
-                                exception=str(e), **individual))
-        err = Error(message="Could not write ORM object", code=400)
-        return err
+        err = _report_write_error('individual', e, **individual)
+        return err, 500
 
-    logger.info(struct_log(action='individual_created',
-                           ind_id=str(iid), **individual))
+    logger().info(struct_log(action='individual_created',
+                             ind_id=str(iid), **individual))
     return individual, 201, {'Location': '/individuals/'+str(iid)}
-
-
-def call_exists(db_session, id=None, variant_id=None, individual_id=None,
-                **kwargs):
-    """
-    Check to see if call exists, by ID if given or if by features if not
-    """
-    if id is not None:
-        if db_session.query(python_model_service.orm.models.Call)\
-           .filter(python_model_service.orm.models.Call.id == id).one_or_none():
-            return True
-    if db_session.query(python_model_service.orm.models.Call).filter_by(variant_id=variant_id)\
-       .filter(python_model_service.orm.models.Call.individual_id == individual_id).one_or_none():
-        return True
-
-    return False
 
 
 @apilog
@@ -270,23 +314,16 @@ def post_call(call):
     """
     Add a new call
     """
-    db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
+    db_session = orm.models.get_session()
 
     try:
         found_call = call_exists(db_session, **call)
     except orm.ORMException as e:
-        err = Error(message="DB error searching for call", code=500)
-        logger.error(struct_log(action='DB error searching for call',
-                                exception=str(e)))
+        err = _report_search_failed('call', e, **call)
         return err
 
     if found_call:
-        logger.warning(struct_log(action='call_post',
-                                  error='Attempt to update call w post',
-                                  code=405,
-                                  **call))
-        err = Error(message="Attempt to update object with a POST", code=405)
+        err = _report_object_exists('call', **call)
         return err, 405
 
     cid = uuid.uuid1()
@@ -294,25 +331,19 @@ def post_call(call):
     call['created'] = datetime.datetime.utcnow()
 
     try:
-        orm_call = python_model_service.orm.models.Call(**call)
+        orm_call = orm.models.Call(**call)
     except orm.ORMException as e:
-        logger.error(struct_log(action='call_conversion',
-                                status='could not convert to ORM object',
-                                exception=str(e), **call))
-        err = Error(message="Could not convert to ORM object", code=400)
+        err = _report_conversion_error('call', e, **call)
         return err
 
     try:
         db_session.add(orm_call)
         db_session.commit()
     except orm.ORMException as e:
-        logger.error(struct_log(action='saving call',
-                                status='could not write call to DB',
-                                exception=str(e), **call))
-        err = Error(message="Could not write ORM object", code=400)
+        err = _report_write_error('call', e, **call)
         return err
 
-    logger.info(struct_log(action='call_post', status='created', call_id=str(cid), **call))  # noqa501
+    logger().info(struct_log(action='call_post', status='created', call_id=str(cid), **call))  # noqa501
     return call, 201, {'Location': '/calls/'+str(cid)}
 
 
@@ -321,19 +352,16 @@ def get_variants_by_individual(individual_id):
     """
     Return variants that have been called in an individual
     """
-    db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
+    db_session = orm.models.get_session()
     ind_id = individual_id
 
     try:
-        ind = db_session.query(python_model_service.orm.models.Individual)\
-            .filter(python_model_service.orm.models.Individual.id == ind_id)\
+        ind = db_session.query(orm.models.Individual)\
+            .filter(orm.models.Individual.id == ind_id)\
             .one_or_none()
     except orm.ORMException as e:
-        err = Error(message="DB error searching for individual", code=500)
-        logger.error(struct_log(action='DB error searching for individual',
-                                exception=str(e)))
-        return err
+        err = _report_search_failed('individual', e, individual_id=individual_id)
+        return err, 500
 
     if not ind:
         err = Error(message="No individual found: "+str(ind_id), code=404)
@@ -342,10 +370,8 @@ def get_variants_by_individual(individual_id):
     try:
         variants = [call.variant for call in ind.calls if call.variant]
     except orm.ORMException as e:
-        err = Error(message="DB error searching for variants", code=500)
-        logger.error(struct_log(action='DB error searching for variants',
-                                exception=str(e)))
-        return err
+        err = _report_search_failed('variants', e, by_individual_id=individual_id)
+        return err, 500
 
     return [orm.dump(v) for v in variants], 200
 
@@ -355,31 +381,25 @@ def get_individuals_by_variant(variant_id):
     """
     Return variants that have been called in an individual
     """
-    db_session = python_model_service.orm.models.get_session()
-    logger = logging.getLogger('python_model_service')
-    var_id = variant_id
+    db_session = orm.models.get_session()
 
     try:
-        var = db_session.query(python_model_service.orm.models.Variant)\
-            .filter(python_model_service.orm.models.Variant.id == var_id)\
+        var = db_session.query(orm.models.Variant)\
+            .filter(orm.models.Variant.id == variant_id)\
             .one_or_none()
     except orm.ORMException as e:
-        err = Error(message="DB error searching for variant", code=500)
-        logger.error(struct_log(action='DB error searching for variant',
-                                exception=str(e)))
-        return err
+        err = _report_search_failed('variant', e, variant_id=variant_id)
+        return err, 500
 
     if not var:
-        err = Error(message="No individual found: "+str(var_id), code=404)
+        err = Error(message="No variant found: "+str(var_id), code=404)
         return err, 404
 
     try:
         individuals = [call.individual for call in var.calls
                        if call.individual is not None]
     except orm.ORMException as e:
-        err = Error(message="DB error searching for individuals", code=500)
-        logger.error(struct_log(action='DB error searching for individuals',
-                                exception=str(e)))
-        return err
+        err = _report_search_failed('individuals', e, by_variant_id=variant_id)
+        return err, 500
 
     return [orm.dump(i) for i in individuals], 200
