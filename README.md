@@ -2,7 +2,7 @@
 
 Based on a CanDIG [OpenAPI variant service demo](https://github.com/CanDIG/openapi_calls_example), this toy service demonstrates the Python OpenAPI stack with CanDIG API best practices.
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/12c348fcff6e417bb4adc14ccc006060)](https://app.codacy.com/app/ljdursi/python_model_service?utm_source=github.com&utm_medium=referral&utm_content=CanDIG/python_model_service&utm_campaign=badger)
+[![CodeFactor](https://www.codefactor.io/repository/github/CanDIG/python_model_service/badge)](https://www.codefactor.io/repository/github/CanDIG/python_model_service)
 [![Build Status](https://travis-ci.org/CanDIG/python_model_service.svg?branch=master)](https://travis-ci.org/CanDIG/python_model_service)
 [![PyUp](https://pyup.io/repos/github/CanDIG/python_model_service/shield.svg)](https://pyup.io/repos/github/CanDIG/python_model_service/)
 

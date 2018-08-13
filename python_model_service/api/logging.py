@@ -10,6 +10,8 @@ from uuid import UUID
 from decorator import decorator
 from connexion import request
 
+LOGGERNAME = 'python_model_service'
+
 
 class FieldEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -28,6 +30,10 @@ def structured_log(**kwargs):
     for key in kwargs:
         entrydict[key] = kwargs[key]
     return json.dumps(entrydict, skipkeys=True, cls=FieldEncoder)
+
+
+def logger():
+    return logging.getLogger(LOGGERNAME)
 
 
 @decorator
