@@ -10,7 +10,7 @@ from uuid import UUID
 from decorator import decorator
 from connexion import request
 
-LOGGERNAME: str='python_model_service'
+LOGGERNAME = 'python_model_service'
 
 
 class FieldEncoder(json.JSONEncoder):
