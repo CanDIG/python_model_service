@@ -7,7 +7,7 @@ import uuid
 
 import pytest
 
-from python_model_service.orm import dump, get_session
+from python_model_service.orm import dump, init_db, get_session
 from python_model_service.orm.models import Individual, Variant, Call
 
 
@@ -29,7 +29,8 @@ def simple_db(db_filename="ormtest.db"):  # pylint: disable=too-many-locals
     except OSError:
         pass
 
-    session = get_session('sqlite:///'+db_filename, expire_on_commit=False)
+    init_db('sqlite:///'+db_filename)
+    session = get_session(expire_on_commit=False)
 
     ind_ids = [uuid.uuid1() for _ in range(2)]
     var_ids = [uuid.uuid1() for _ in range(3)]
@@ -76,7 +77,7 @@ def test_search_calls(simple_db):
     Perform simple call searches on the DB fixture
     """
     _, _, calls, dbname = simple_db
-    db_session = get_session('sqlite:///'+dbname)
+    db_session = get_session()
 
     # Test simple call queries
     # By ID:
@@ -100,7 +101,7 @@ def test_search_variants(simple_db):
     Perform simple variant searches on the DB fixture
     """
     _, variants, _, dbname = simple_db
-    db_session = get_session('sqlite:///'+dbname)
+    db_session = get_session()
 
     # Test simple variant queries
     # By ID:
@@ -125,7 +126,7 @@ def test_search_individuals(simple_db):
     Perform simple individual searches on the DB fixture
     """
     inds, _, _, dbname = simple_db
-    db_session = get_session('sqlite:///'+dbname)
+    db_session = get_session()
 
     # Test simple individual queries
     # By ID:
@@ -142,7 +143,7 @@ def test_relationships(simple_db):
     Test the individual <-> call <-> variant relationship
     """
     inds, variants, calls, dbname = simple_db
-    db_session = get_session('sqlite:///'+dbname)
+    db_session = get_session()
 
     # note: currenly only testing relationship outwards from call
     # TODO: add testing starting from individual and variant
