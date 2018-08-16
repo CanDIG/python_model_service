@@ -7,8 +7,8 @@ import uuid
 
 import pytest
 
-from python_model_service.orm import dump
-from python_model_service.orm.models import Individual, Variant, Call, get_session
+from python_model_service.orm import dump, get_session
+from python_model_service.orm.models import Individual, Variant, Call
 
 
 def are_equivalent(ormobj1, ormobj2):
