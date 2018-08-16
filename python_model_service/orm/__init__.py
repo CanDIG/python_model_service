@@ -7,6 +7,7 @@ from sqlalchemy import event, create_engine, exc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from tornado.options import options
 
 ORMException = SQLAlchemyError
 
@@ -47,13 +48,16 @@ def add_engine_pidguard(engine):
 
 
 def init_db(uri=None):
+    """
+    Creates the DB engine + ORM
+    """
     global _engine
-    import python_model_service.orm.models
-    Base.metadata.create_all(bind=engine)
+    import python_model_service.orm.models # noqa401
     if not uri:
         uri = 'sqlite:///' + options.dbfile
     _engine = create_engine(uri, convert_unicode=True)
     add_engine_pidguard(_engine)
+    Base.metadata.create_all(bind=_engine)
 
 
 def get_session(**kwargs):
@@ -62,8 +66,9 @@ def get_session(**kwargs):
     """
     global _db_session
     if not _db_session:
-        _db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False,
-                                                 bind=_engine, **kwargs))
+        _db_session = scoped_session(sessionmaker(autocommit=False,
+                                                  autoflush=False,
+                                                  bind=_engine, **kwargs))
         Base.query = _db_session.query_property()
     return _db_session
 

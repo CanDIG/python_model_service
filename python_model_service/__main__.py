@@ -8,7 +8,7 @@ import logging
 import pkg_resources
 import connexion
 from tornado.options import define
-from python_model_service import orm
+import python_model_service.orm as orm
 
 
 def main(args=None):
@@ -27,10 +27,10 @@ def main(args=None):
     # set up the application
     app = connexion.FlaskApp(__name__, server='tornado')
     define("dbfile", default=args.database)
-    orm.create_engine(args.database)
+    orm.init_db()
     db_session = orm.get_session()
 
-    @app.teardown_appcontext
+    @app.app.teardown_appcontext
     def shutdown_session(exception=None):
         db_session.remove()
 
@@ -42,7 +42,6 @@ def main(args=None):
     app.app.logger = logging.getLogger('python_model_service')
     app.app.logger.setLevel(logging.WARN)
     app.app.logger.addHandler(log_handler)
-
 
     # add the swagger APIs
     api_def = pkg_resources.resource_filename('python_model_service',
