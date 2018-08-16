@@ -3,13 +3,9 @@ SQLAlchemy models for the database
 """
 from sqlalchemy import Column, String, DateTime, Integer
 from sqlalchemy import UniqueConstraint, ForeignKey, create_engine
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
-from tornado.options import options
-
 from python_model_service.orm.guid import GUID
-
-Base = declarative_base()
+from python_model_service.orm import Base
 
 
 class Individual(Base):
@@ -60,16 +56,3 @@ class Call(Base):
         UniqueConstraint("variant_id", "individual_id"),
     )
 
-
-def get_session(uri=None, **kwargs):
-    """
-    Start the database session
-    """
-    if not uri:
-        uri = 'sqlite:///' + options.dbfile
-    engine = create_engine(uri, convert_unicode=True)
-    db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False,
-                                             bind=engine, **kwargs))
-    Base.query = db_session.query_property()
-    Base.metadata.create_all(bind=engine)
-    return db_session
