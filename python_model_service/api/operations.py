@@ -123,7 +123,7 @@ def get_individuals():
         err = _report_search_failed('individuals', e, ind_id="all")
         return err, 500
 
-    return [orm.dump(p) for p in q.all()], 200
+    return [orm.dump(p) for p in q], 200
 
 
 @apilog
@@ -149,14 +149,13 @@ def get_calls():
     """
     Return all calls
     """
-    db_session = orm.get_session()
     try:
-        q = db_session.query(orm.models.Call)
+        q = Call().query.all()
     except orm.ORMException as e:
         err = _report_search_failed('call', e, call_id='all')
         return err, 500
 
-    return [orm.dump(p) for p in q.all()], 200
+    return [orm.dump(p) for p in q], 200
 
 
 @apilog
@@ -164,9 +163,8 @@ def get_one_call(call_id):
     """
     Return single call object
     """
-    db_session = orm.get_session()
     try:
-        q = db_session.query(orm.models.Call).get(call_id)
+        q = Call().query.get(call_id)
     except Error as e:
         err = _report_search_failed('call', e, call_id=str(call_id))
         return err, 500
@@ -185,14 +183,12 @@ def variant_exists(db_session, id=None, chromosome=None, start=None,
     Check to see if variant exists, by ID if given or if by features if not
     """
     if id is not None:
-        if db_session.query(orm.models.Variant)\
-           .filter(orm.models.Variant.id == id).one_or_none():
+        if Variant().query.get(id) != None:
             return True
-    if db_session.query(orm.models.Variant).filter_by(chromosome=chromosome) \
-        .filter(and_(orm.models.Variant.start == start,
-                     orm.models.Variant.alt == alt,
-                     orm.models.Variant.ref == ref)) \
-        .one_or_none():
+    if Variant().query.filter_by(chromosome=chromosome) \
+        .filter(and_(Variant.start == start,
+                     Variant.alt == alt,
+                     Variant.ref == ref)).exists():
         return True
 
     return False
@@ -203,9 +199,9 @@ def call_exists(db_session, id=None, variant_id=None, individual_id=None, **kwar
     Check to see if Call exists, by ID if given or if by features if not
     """
     if id is not None:
-        if db_session.query(orm.models.Call).get(id).exists():
+        if Call().query.get(id).exists():
             return True
-    return db_session.query(orm.models.Call).filter(variant_id == variant_id, individual_id == individual_id).exists() # noqa501
+    return Call().query.filter(variant_id == variant_id, individual_id == individual_id).exists() # noqa501
 
 
 def individual_exists(db_session, id=None, **kwargs):
