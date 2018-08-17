@@ -185,10 +185,8 @@ def variant_exists(db_session, id=None, chromosome=None, start=None,
     if id is not None:
         if Variant().query.get(id) != None:
             return True
-    if Variant().query.filter_by(chromosome=chromosome) \
-        .filter(and_(Variant.start == start,
-                     Variant.alt == alt,
-                     Variant.ref == ref)).exists():
+    if Variant().query.filter_by(chromosome=chromosome)\
+        .filter(and_(start == start, alt == alt, ref == ref)).count() > 0:
         return True
 
     return False
@@ -199,9 +197,9 @@ def call_exists(db_session, id=None, variant_id=None, individual_id=None, **kwar
     Check to see if Call exists, by ID if given or if by features if not
     """
     if id is not None:
-        if Call().query.get(id).exists():
+        if Call().query.get(id).count() > 0:
             return True
-    return Call().query.filter(variant_id == variant_id, individual_id == individual_id).exists() # noqa501
+    return Call().query.filter(and_(variant_id == variant_id, individual_id == individual_id)).count() > 0 # noqa501
 
 
 def individual_exists(db_session, id=None, **kwargs):
@@ -209,7 +207,7 @@ def individual_exists(db_session, id=None, **kwargs):
     Check to see if individual exists, by ID if given or if by features if not
     """
     if id is not None:
-        return db_session.query(orm.models.Individual).filter(id == id).exists()
+        return db_session.query(orm.models.Individual).filter(id == id).count() > 0
 
     return False
 
