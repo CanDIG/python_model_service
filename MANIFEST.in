@@ -1,8 +1,9 @@
 include LICENSE
 include README.md
-include python-model-service/api/swagger.yml
+include python_model_service/api/swagger.yml
 
 recursive-include tests *
+recursive-include python_model_service *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
