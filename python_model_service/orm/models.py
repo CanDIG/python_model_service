@@ -2,7 +2,7 @@
 SQLAlchemy models for the database
 """
 from sqlalchemy import Column, String, DateTime, Integer
-from sqlalchemy import UniqueConstraint, ForeignKey, create_engine
+from sqlalchemy import UniqueConstraint, ForeignKey
 from sqlalchemy.orm import relationship
 from python_model_service.orm.guid import GUID
 from python_model_service.orm import Base

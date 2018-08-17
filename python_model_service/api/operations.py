@@ -177,7 +177,7 @@ def get_one_call(call_id):
     return orm.dump(q), 200
 
 
-def variant_exists(db_session, id=None, chromosome=None, start=None,
+def variant_exists(id=None, chromosome=None, start=None,
                    alt=None, ref=None, **_kwargs):
     """
     Check to see if variant exists, by ID if given or if by features if not
@@ -192,7 +192,7 @@ def variant_exists(db_session, id=None, chromosome=None, start=None,
     return False
 
 
-def call_exists(db_session, id=None, variant_id=None, individual_id=None, **_kwargs):
+def call_exists(id=None, variant_id=None, individual_id=None, **_kwargs):
     """
     Check to see if Call exists, by ID if given or if by features if not
     """
@@ -221,7 +221,7 @@ def post_variant(variant):
 
     # Does this variant already exist, by ID or by content?
     try:
-        found_variant = variant_exists(db_session, **variant)
+        found_variant = variant_exists(**variant)
     except orm.ORMException as e:
         err = _report_search_failed('variant', e, **variant)
         return err
@@ -298,7 +298,7 @@ def post_call(call):
     db_session = orm.get_session()
 
     try:
-        found_call = call_exists(db_session, **call)
+        found_call = call_exists(**call)
     except orm.ORMException as e:
         err = _report_search_failed('call', e, **call)
         return err
