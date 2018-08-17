@@ -76,7 +76,7 @@ def test_search_calls(simple_db):
     """
     Perform simple call searches on the DB fixture
     """
-    _, _, calls, dbname = simple_db
+    _, _, calls, _ = simple_db
     db_session = get_session()
 
     # Test simple call queries
@@ -100,7 +100,7 @@ def test_search_variants(simple_db):
     """
     Perform simple variant searches on the DB fixture
     """
-    _, variants, _, dbname = simple_db
+    _, variants, _, _ = simple_db
     db_session = get_session()
 
     # Test simple variant queries
@@ -125,7 +125,7 @@ def test_search_individuals(simple_db):
     """
     Perform simple individual searches on the DB fixture
     """
-    inds, _, _, dbname = simple_db
+    inds, _, _, _ = simple_db
     db_session = get_session()
 
     # Test simple individual queries
@@ -142,7 +142,7 @@ def test_relationships(simple_db):
     """
     Test the individual <-> call <-> variant relationship
     """
-    inds, variants, calls, dbname = simple_db
+    inds, variants, calls, _ = simple_db
     db_session = get_session()
 
     # note: currenly only testing relationship outwards from call

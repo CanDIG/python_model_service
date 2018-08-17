@@ -26,11 +26,11 @@ def add_engine_pidguard(engine):
 
     """
     @event.listens_for(engine, "connect")
-    def connect(dbapi_connection, connection_record):
+    def connect(_dbapi_connection, connection_record):
         connection_record.info['pid'] = os.getpid()
 
     @event.listens_for(engine, "checkout")
-    def checkout(dbapi_connection, connection_record, connection_proxy):
+    def checkout(_dbapi_connection, connection_record, connection_proxy):
         pid = os.getpid()
         if connection_record.info['pid'] != pid:
             # substitute log.debug() or similar here as desired
@@ -52,7 +52,7 @@ def init_db(uri=None):
     Creates the DB engine + ORM
     """
     global _engine
-    import python_model_service.orm.models # noqa401
+    import python_model_service.orm.models # noqa401 #pylint: disable=unused-argument
     if not uri:
         uri = 'sqlite:///' + options.dbfile
     _engine = create_engine(uri, convert_unicode=True)

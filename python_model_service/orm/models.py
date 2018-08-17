@@ -3,7 +3,7 @@ SQLAlchemy models for the database
 """
 from sqlalchemy import Column, String, DateTime, Integer
 from sqlalchemy import UniqueConstraint, ForeignKey, create_engine
-from sqlalchemy.orm import relationship, scoped_session, sessionmaker
+from sqlalchemy.orm import relationship
 from python_model_service.orm.guid import GUID
 from python_model_service.orm import Base
 
@@ -55,4 +55,3 @@ class Call(Base):
     __table_args__ = (
         UniqueConstraint("variant_id", "individual_id"),
     )
-

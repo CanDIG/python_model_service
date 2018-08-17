@@ -178,7 +178,7 @@ def get_one_call(call_id):
 
 
 def variant_exists(db_session, id=None, chromosome=None, start=None,
-                   alt=None, ref=None, **kwargs):
+                   alt=None, ref=None, **_kwargs):
     """
     Check to see if variant exists, by ID if given or if by features if not
     """
@@ -192,7 +192,7 @@ def variant_exists(db_session, id=None, chromosome=None, start=None,
     return False
 
 
-def call_exists(db_session, id=None, variant_id=None, individual_id=None, **kwargs):
+def call_exists(db_session, id=None, variant_id=None, individual_id=None, **_kwargs):
     """
     Check to see if Call exists, by ID if given or if by features if not
     """
@@ -202,7 +202,7 @@ def call_exists(db_session, id=None, variant_id=None, individual_id=None, **kwar
     return Call().query.filter(and_(variant_id == variant_id, individual_id == individual_id)).count() > 0 # noqa501
 
 
-def individual_exists(db_session, id=None, **kwargs):
+def individual_exists(db_session, id=None, **_kwargs):
     """
     Check to see if individual exists, by ID if given or if by features if not
     """

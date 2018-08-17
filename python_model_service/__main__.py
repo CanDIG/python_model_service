@@ -32,6 +32,10 @@ def main(args=None):
 
     @app.app.teardown_appcontext
     def shutdown_session(exception=None):
+        """
+        Tear down the DB session
+        """
+        #pylint: disable=unused-argument
         db_session.remove()
 
     # configure logging
