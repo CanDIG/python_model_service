@@ -5,19 +5,24 @@ python:
   - 3.6
   - 3.5
 
-# cache the node stuff for dredd, otherwise everything takes forever:
+# packages for dredd
+addons:
+  apt:
+    packages:
+    - nodejs
+    - npm
 
+# cache the node stuff for dredd, otherwise everything takes forever:
 cache:
   directories:
-    - node_modules
-    - .nvm
+    - ~/node_modules
+    - ~/.nvm
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: 
   - pip install -r requirements.txt
   - pip install -r requirements_dev.txt
   - pip install -U tox-travis
-  - sudo apt-get install -y nodejs npm # for dredd
   - npm install -g dredd
 
 # Command to run tests, e.g. python setup.py test
