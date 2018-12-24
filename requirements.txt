@@ -1,4 +1,4 @@
-connexion==2.0.2
+connexion==2.2.0
 SQLAlchemy==1.2.14
 tornado==5.1.1
 decorator==4.3.0
