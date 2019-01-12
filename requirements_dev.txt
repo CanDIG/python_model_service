@@ -4,6 +4,6 @@ flake8==3.6.0
 tox==3.5.3
 coverage==4.5.2
 
-pytest==4.0.1
+pytest==4.1.1
 pytest-runner==4.2
 dredd_hooks==0.2.0
