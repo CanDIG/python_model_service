@@ -82,8 +82,8 @@ def dump(obj, nonulls=False):
     """
     rels = ["calls", "variant", "individual"]
     if not nonulls:
-        return {(k, v) for k, v in vars(obj).items()
+        return {k: v for k, v in vars(obj).items()
                 if not k.startswith('_') and k not in rels}
 
-    return {(k, v) for k, v in vars(obj).items()
+    return {k: v for k, v in vars(obj).items()
             if not k.startswith('_') and k not in rels and v}
