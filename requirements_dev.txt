@@ -1,9 +1,8 @@
 wheel==0.32.3
 watchdog==0.9.0
-flake8==3.6.0
-tox==3.5.3
+flake8==3.7.5
+tox==3.7.0
 coverage==4.5.2
-
 pytest==4.0.1
 pytest-runner==4.2
 dredd_hooks==0.2.0
