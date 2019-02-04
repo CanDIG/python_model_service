@@ -288,7 +288,7 @@ definitions:
         type: string
         format: uuid
         description: Unique identifier
-        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+        # example: bf3ba75b-8dfe-4619-b832-31c4a087a589
         readOnly: true
       description:
         type: string
@@ -300,7 +300,7 @@ definitions:
         type: string
         format: date-time
         description: Creation time
-        example: "2015-07-07T15:49:51.230+02:00"
+        # example: "2015-07-07T15:49:51.230+02:00"
         readOnly: true
 
   Call:
@@ -314,7 +314,7 @@ definitions:
         description: Unique identifier
         type: string
         format: uuid
-        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+        # example: bf3ba75b-8dfe-4619-b832-31c4a087a589
         readOnly: true
       individual_id:
         type: string
@@ -339,7 +339,7 @@ definitions:
         type: string
         format: date-time
         description: Creation time
-        example: "2015-07-07T15:49:51.230+02:00"
+        # example: "2015-07-07T15:49:51.230+02:00"
         readOnly: true
 
   Variant:
@@ -352,7 +352,7 @@ definitions:
     properties:
       id:
         description: Unique identifier
-        example: bf3ba75b-8dfe-4619-b832-31c4a087a589
+        # example: bf3ba75b-8dfe-4619-b832-31c4a087a589
         readOnly: true
       name:
         type: string
