@@ -13,8 +13,8 @@ ORMException = SQLAlchemyError
 
 Base = declarative_base()
 
-_engine = None
-_db_session = None
+_ENGINE = None
+_DB_SESSION = None
 
 
 # From http://docs.sqlalchemy.org/en/latest/faq/connections.html
@@ -27,10 +27,12 @@ def add_engine_pidguard(engine):
     """
     @event.listens_for(engine, "connect")
     def connect(_dbapi_connection, connection_record):
+        """Get PID at connect time"""
         connection_record.info['pid'] = os.getpid()
 
     @event.listens_for(engine, "checkout")
     def checkout(_dbapi_connection, connection_record, connection_proxy):
+        """Disconnect and raise error if not same PID"""
         pid = os.getpid()
         if connection_record.info['pid'] != pid:
             # substitute log.debug() or similar here as desired
@@ -51,26 +53,26 @@ def init_db(uri=None):
     """
     Creates the DB engine + ORM
     """
-    global _engine
+    global _ENGINE
     import python_model_service.orm.models # noqa401 #pylint: disable=unused-argument
     if not uri:
         uri = 'sqlite:///' + options.dbfile
-    _engine = create_engine(uri, convert_unicode=True)
-    add_engine_pidguard(_engine)
-    Base.metadata.create_all(bind=_engine)
+    _ENGINE = create_engine(uri, convert_unicode=True)
+    add_engine_pidguard(_ENGINE)
+    Base.metadata.create_all(bind=_ENGINE)
 
 
 def get_session(**kwargs):
     """
     Start the database session
     """
-    global _db_session
-    if not _db_session:
-        _db_session = scoped_session(sessionmaker(autocommit=False,
+    global _DB_SESSION
+    if not _DB_SESSION:
+        _DB_SESSION = scoped_session(sessionmaker(autocommit=False,
                                                   autoflush=False,
-                                                  bind=_engine, **kwargs))
-        Base.query = _db_session.query_property()
-    return _db_session
+                                                  bind=_ENGINE, **kwargs))
+        Base.query = _DB_SESSION.query_property()
+    return _DB_SESSION
 
 
 def dump(obj, nonulls=False):

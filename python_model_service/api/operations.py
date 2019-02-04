@@ -183,7 +183,7 @@ def variant_exists(id=None, chromosome=None, start=None,
     Check to see if variant exists, by ID if given or if by features if not
     """
     if id is not None:
-        if Variant().query.get(id) != None:
+        if Variant().query.get(id) is not None:
             return True
     if Variant().query.filter_by(chromosome=chromosome)\
         .filter(and_(start == start, alt == alt, ref == ref)).count() > 0:
