@@ -1,6 +1,6 @@
-connexion==2.0.2
-SQLAlchemy==1.2.14
+connexion==2.2.0
+SQLAlchemy==1.2.17
 tornado==5.1.1
 decorator==4.3.0
-bravado-core==5.10.0
-pyyaml==3.13
+bravado-core==5.10.1
+pyyaml>=4.2b1
