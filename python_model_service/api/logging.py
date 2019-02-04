@@ -14,7 +14,8 @@ LOGGERNAME = 'python_model_service'
 
 
 class FieldEncoder(json.JSONEncoder):
-    def default(self, obj):
+    """Wrap fields to be JSON-safe; handle datetime & UUID"""
+    def default(self, obj):   # pylint: disable=E0202
         if isinstance(obj, UUID):
             return str(obj)
         if isinstance(obj, datetime):
@@ -33,6 +34,7 @@ def structured_log(**kwargs):
 
 
 def logger():
+    """Return the py.logging current logger"""
     return logging.getLogger(LOGGERNAME)
 
 
@@ -54,8 +56,8 @@ def apilog(func, *args, **kwargs):
         for key in kwargs:
             entrydict[key] = kwargs[key]
 
-    logger = logging.getLogger('python_model_service')
+    loc_logger = logging.getLogger('python_model_service')
     logentry = json.dumps(entrydict)
     level = logging.INFO
-    logger.log(level, logentry)
+    loc_logger.log(level, logentry)
     return func(*args, **kwargs)
