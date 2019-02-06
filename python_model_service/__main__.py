@@ -31,7 +31,7 @@ def main(args=None):
     db_session = python_model_service.orm.get_session()
 
     @app.app.teardown_appcontext
-    def shutdown_session(exception=None):  # pylint: disable=unused-argument
+    def shutdown_session(exception=None):  # pylint:disable=unused-variable,unused-argument
         """
         Tear down the DB session
         """

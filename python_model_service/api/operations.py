@@ -8,6 +8,7 @@ import uuid
 
 from sqlalchemy import and_
 from python_model_service import orm
+from python_model_service.orm import models
 from python_model_service.api.logging import apilog, logger
 from python_model_service.api.logging import structured_log as struct_log
 from python_model_service.api.models import Error
@@ -85,7 +86,9 @@ def get_variants(chromosome, start, end):
     """
     db_session = orm.get_session()
     try:
-        q = db_session.query(orm.models.Variant).filter_by(chromosome=chromosome).filter(and_(start >= start, start <= end)) # noqa501
+        q = db_session.query(orm.models.Variant)\
+            .filter(models.Variant.chromosome == chromosome)\
+            .filter(and_(start >= models.Variant.start, start <= models.Variant.end))
     except orm.ORMException as e:
         err = _report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
         return err, 500
@@ -100,7 +103,7 @@ def get_one_variant(variant_id):
     """
     db_session = orm.get_session()
     try:
-        q = db_session.query(orm.models.Variant).get(variant_id)
+        q = db_session.query(models.Variant).get(variant_id)
     except orm.ORMException as e:
         err = _report_search_failed('variant', e, var_id=str(variant_id))
         return err, 500
@@ -185,8 +188,10 @@ def variant_exists(id=None, chromosome=None,  # pylint:disable=redefined-builtin
     if id is not None:
         if Variant().query.get(id) is not None:
             return True
-    if Variant().query.filter_by(chromosome=chromosome)\
-        .filter(and_(start == start, alt == alt, ref == ref)).count() > 0:
+    if Variant().query.filter(models.Variant.chromosome == chromosome)\
+        .filter(and_(models.Variant.start == start,
+                     models.Variant.alt == alt,
+                     models.Variant.ref == ref)).count() > 0:
         return True
 
     return False
@@ -200,7 +205,10 @@ def call_exists(id=None, variant_id=None,  # pylint:disable=redefined-builtin
     if id is not None:
         if Call().query.get(id).count() > 0:
             return True
-    return Call().query.filter(and_(variant_id == variant_id, individual_id == individual_id)).count() > 0 # noqa501
+    c = Call().query.filter(and_(models.Variant.variant_id == variant_id,
+                                 models.Variant.individual_id == individual_id))\
+        .count()
+    return c > 0
 
 
 def individual_exists(db_session, id=None, **_kwargs):  # pylint:disable=redefined-builtin
@@ -208,7 +216,8 @@ def individual_exists(db_session, id=None, **_kwargs):  # pylint:disable=redefin
     Check to see if individual exists, by ID if given or if by features if not
     """
     if id is not None:
-        return db_session.query(orm.models.Individual).filter(id == id).count() > 0
+        return db_session.query(orm.models.Individual)\
+                          .filter(models.Individual.id == id).count() > 0
 
     return False
 
