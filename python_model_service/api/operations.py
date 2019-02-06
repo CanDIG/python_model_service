@@ -88,7 +88,7 @@ def get_variants(chromosome, start, end):
     try:
         q = db_session.query(orm.models.Variant)\
             .filter(models.Variant.chromosome == chromosome)\
-            .filter(and_(start >= models.Variant.start, start <= models.Variant.end))
+            .filter(and_(models.Variant.start <= start, models.Variant.start <= end))
     except orm.ORMException as e:
         err = _report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
         return err, 500
@@ -216,7 +216,7 @@ def individual_exists(db_session, id=None, **_kwargs):  # pylint:disable=redefin
     Check to see if individual exists, by ID if given or if by features if not
     """
     if id is not None:
-        return db_session.query(orm.models.Individual)\
+        return db_session.query(models.Individual)\
                           .filter(models.Individual.id == id).count() > 0
 
     return False
@@ -246,7 +246,7 @@ def post_variant(variant):
 
     # convert to ORM representation
     try:
-        orm_variant = orm.models.Variant(**variant)
+        orm_variant = models.Variant(**variant)
     except orm.ORMException as e:
         err = _report_conversion_error('variant', e, **variant)
         return err, 400
