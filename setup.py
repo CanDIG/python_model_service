@@ -19,8 +19,6 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
@@ -38,7 +36,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     data_files=data_files,
-    url='https://github.com/ljdursi/python_model_service',
+    url='https://github.com/CanDIG/python_model_service',
     version='0.1.1',
     zip_safe=False,
     entry_points={
