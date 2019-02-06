@@ -2,7 +2,7 @@ dry-run: null
 hookfiles: null
 language: python
 sandbox: false
-server: python -m python_model_service --database test.db --logfile test.log
+server: python3 -m python_model_service --database test.db --logfile test.log
 server-wait: 10
 init: false
 custom: {}

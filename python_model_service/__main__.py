@@ -42,9 +42,8 @@ def main(args=None):
     numeric_loglevel = getattr(logging, args.loglevel.upper())
     log_handler.setLevel(numeric_loglevel)
 
-    app.app.logger = logging.getLogger('python_model_service')
-    app.app.logger.setLevel(logging.WARN)
     app.app.logger.addHandler(log_handler)
+    app.app.logger.setLevel(logging.WARN)
 
     # add the swagger APIs
     api_def = pkg_resources.resource_filename('python_model_service',

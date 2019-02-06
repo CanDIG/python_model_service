@@ -88,7 +88,7 @@ def get_variants(chromosome, start, end):
     try:
         q = db_session.query(orm.models.Variant)\
             .filter(models.Variant.chromosome == chromosome)\
-            .filter(and_(models.Variant.start <= start, models.Variant.start <= end))
+            .filter(and_(models.Variant.start >= start, models.Variant.start <= end))
     except orm.ORMException as e:
         err = _report_search_failed('variant', e, chromosome=chromosome, start=start, end=end)
         return err, 500
@@ -186,7 +186,7 @@ def variant_exists(id=None, chromosome=None,  # pylint:disable=redefined-builtin
     Check to see if variant exists, by ID if given or if by features if not
     """
     if id is not None:
-        if Variant().query.get(id) is not None:
+        if Variant().query.get(id).count() > 0:
             return True
     if Variant().query.filter(models.Variant.chromosome == chromosome)\
         .filter(and_(models.Variant.start == start,
@@ -205,8 +205,8 @@ def call_exists(id=None, variant_id=None,  # pylint:disable=redefined-builtin
     if id is not None:
         if Call().query.get(id).count() > 0:
             return True
-    c = Call().query.filter(and_(models.Variant.variant_id == variant_id,
-                                 models.Variant.individual_id == individual_id))\
+    c = Call().query.filter(and_(models.Call.variant_id == variant_id,
+                                 models.Call.individual_id == individual_id))\
         .count()
     return c > 0
 
