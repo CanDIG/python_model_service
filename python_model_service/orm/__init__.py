@@ -26,12 +26,12 @@ def add_engine_pidguard(engine):
 
     """
     @event.listens_for(engine, "connect")
-    def connect(_dbapi_connection, connection_record):
+    def connect(_dbapi_connection, connection_record):  # pylint:disable=unused-variable
         """Get PID at connect time"""
         connection_record.info['pid'] = os.getpid()
 
     @event.listens_for(engine, "checkout")
-    def checkout(_dbapi_connection, connection_record, connection_proxy):
+    def checkout(_dbapi_connection, connection_record, connection_proxy):  # pylint:disable=unused-variable
         """Disconnect and raise error if not same PID"""
         pid = os.getpid()
         if connection_record.info['pid'] != pid:
@@ -54,7 +54,7 @@ def init_db(uri=None):
     Creates the DB engine + ORM
     """
     global _ENGINE
-    import python_model_service.orm.models # noqa401 #pylint: disable=unused-argument
+    import python_model_service.orm.models # noqa401 #pylint: disable=unused-variable
     if not uri:
         uri = 'sqlite:///' + options.dbfile
     _ENGINE = create_engine(uri, convert_unicode=True)

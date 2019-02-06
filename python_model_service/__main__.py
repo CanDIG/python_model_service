@@ -8,7 +8,7 @@ import logging
 import pkg_resources
 import connexion
 from tornado.options import define
-import python_model_service.orm as orm
+import python_model_service.orm
 
 
 def main(args=None):
@@ -27,15 +27,14 @@ def main(args=None):
     # set up the application
     app = connexion.FlaskApp(__name__, server='tornado')
     define("dbfile", default=args.database)
-    orm.init_db()
-    db_session = orm.get_session()
+    python_model_service.orm.init_db()
+    db_session = python_model_service.orm.get_session()
 
     @app.app.teardown_appcontext
-    def shutdown_session(exception=None):
+    def shutdown_session(exception=None):  # pylint: disable=unused-argument
         """
         Tear down the DB session
         """
-        #pylint: disable=unused-argument
         db_session.remove()
 
     # configure logging

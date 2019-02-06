@@ -27,7 +27,7 @@ _SWAGGER_SPEC = Spec.from_dict(_SPEC_DICT, config=_BRAVADO_CONFIG)
 # Generate the Python models from the spec
 #
 
-Error = _SWAGGER_SPEC.definitions['Error']
-Individual = _SWAGGER_SPEC.definitions['Individual']
-Variant = _SWAGGER_SPEC.definitions['Variant']
-Call = _SWAGGER_SPEC.definitions['Call']
+Error = _SWAGGER_SPEC.definitions['Error']  # pylint:disable=invalid-name
+Individual = _SWAGGER_SPEC.definitions['Individual']  # pylint:disable=invalid-name
+Variant = _SWAGGER_SPEC.definitions['Variant']  # pylint:disable=invalid-name
+Call = _SWAGGER_SPEC.definitions['Call']  # pylint:disable=invalid-name

@@ -177,8 +177,8 @@ def get_one_call(call_id):
     return orm.dump(q), 200
 
 
-def variant_exists(id=None, chromosome=None, start=None,
-                   alt=None, ref=None, **_kwargs):
+def variant_exists(id=None, chromosome=None,  # pylint:disable=redefined-builtin
+                   start=None, alt=None, ref=None, **_kwargs):
     """
     Check to see if variant exists, by ID if given or if by features if not
     """
@@ -192,7 +192,8 @@ def variant_exists(id=None, chromosome=None, start=None,
     return False
 
 
-def call_exists(id=None, variant_id=None, individual_id=None, **_kwargs):
+def call_exists(id=None, variant_id=None,  # pylint:disable=redefined-builtin
+                individual_id=None, **_kwargs):
     """
     Check to see if Call exists, by ID if given or if by features if not
     """
@@ -202,7 +203,7 @@ def call_exists(id=None, variant_id=None, individual_id=None, **_kwargs):
     return Call().query.filter(and_(variant_id == variant_id, individual_id == individual_id)).count() > 0 # noqa501
 
 
-def individual_exists(db_session, id=None, **_kwargs):
+def individual_exists(db_session, id=None, **_kwargs):  # pylint:disable=redefined-builtin
     """
     Check to see if individual exists, by ID if given or if by features if not
     """
