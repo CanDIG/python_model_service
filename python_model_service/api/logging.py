@@ -9,8 +9,7 @@ from datetime import datetime
 from uuid import UUID
 from decorator import decorator
 from connexion import request
-
-LOGGERNAME = 'python_model_service'
+from flask import current_app
 
 
 class FieldEncoder(json.JSONEncoder):
@@ -35,7 +34,7 @@ def structured_log(**kwargs):
 
 def logger():
     """Return the py.logging current logger"""
-    return logging.getLogger(LOGGERNAME)
+    return current_app.logger
 
 
 @decorator
@@ -56,8 +55,6 @@ def apilog(func, *args, **kwargs):
         for key in kwargs:
             entrydict[key] = kwargs[key]
 
-    loc_logger = logging.getLogger('python_model_service')
     logentry = json.dumps(entrydict)
-    level = logging.INFO
-    loc_logger.log(level, logentry)
+    current_app.logger.info(logentry)
     return func(*args, **kwargs)
