@@ -31,6 +31,22 @@ def _report_search_failed(typename, exception, **kwargs):
     return Error(message=message, code=500)
 
 
+def _report_update_failed(typename, exception, **kwargs):
+    """
+    Generate standard log message + request error for error:
+    Internal error performing update (PUT)
+
+    :param typename: name of type involved
+    :param exception: exception thrown by ORM
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = typename + ' updated failed'
+    message = 'Internal error updating '+typename+'s'
+    logger().error(struct_log(action=report, exception=str(exception), **kwargs))
+    return Error(message=message, code=500)
+
+
 def _report_object_exists(typename, **kwargs):
     """
     Generate standard log message + request error for warning:
@@ -298,6 +314,37 @@ def post_individual(individual):
     logger().info(struct_log(action='individual_created',
                              ind_id=str(iid), **individual))
     return individual, 201, {'Location': '/individuals/'+str(iid)}
+
+
+@apilog
+def put_individual(individual_id, individual):
+    """
+    Return single individual object
+    """
+    try:
+        q = Individual().query.get(individual_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No individual found: "+str(individual_id), code=404)
+        return err, 404
+
+    if 'id' in individual:
+        del individual['id']
+    if 'created' in individual:
+        del individual['created']
+
+    individual['updated'] = datetime.datetime.utcnow()
+
+    try:
+        q.update(individual)
+    except orm.ORMException as e:
+        err = _report_update_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    return None, 204, {'Location': '/individuals/'+str(individual_id)}
 
 
 @apilog

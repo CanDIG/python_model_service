@@ -30,15 +30,15 @@ paths:
               type: string
               format: url
         "400":
-          description: Variant provided in body does not pass schema validation
+          description: Individual provided in body does not pass schema validation
           schema:
             $ref: "#/definitions/Error"
         "405":
-          description: Forbidden to overwrite variant in post
+          description: Forbidden to overwrite individual in post
           schema:
             $ref: "#/definitions/Error"
         "500":
-          description: Internal error - Variant not created
+          description: Internal error - Individual not created
           schema:
             $ref: "#/definitions/Error"
     get:
@@ -74,6 +74,28 @@ paths:
             $ref: "#/definitions/Error"
         "500":
           description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      operationId: python_model_service.api.operations.put_individual
+      summary: Update specific individual
+      parameters:
+        - $ref: '#/parameters/individual_id'
+        - name: individual
+          in: body
+          schema:
+            $ref: '#/definitions/Individual'
+            example:
+              description: "Subject 17.5"
+      responses:
+        "204":
+          description: Individual successfully updated
+        "404":
+          description: Individual not found
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal error - Individual not updated
           schema:
             $ref: "#/definitions/Error"
 
@@ -297,6 +319,12 @@ definitions:
         minLength: 1
         maxLength: 100
       created:
+        type: string
+        format: date-time
+        description: Creation time
+        example: "2015-07-07T15:49:51.230+02:00"
+        readOnly: true
+      updated:
         type: string
         format: date-time
         description: Creation time

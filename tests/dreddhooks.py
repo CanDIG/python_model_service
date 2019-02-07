@@ -2,7 +2,7 @@ import json
 import dredd_hooks as hooks
 
 UUID_EXAMPLE = "bf3ba75b-8dfe-4619-b832-31c4a087a589"
-RO_FIELDS = ["created", "id"]
+RO_FIELDS = ["created", "updated", "id"]
 response_stash = {}
 
 @hooks.before_each
