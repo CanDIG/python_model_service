@@ -8,14 +8,15 @@ response_stash = {}
 @hooks.before_each
 def redact_readonly_fields(transaction):
     """Do not POST readonly (computed) fields"""
-    # no action necessary if not a POST
-    if transaction['request']['method'] == "POST":
+    # no action necessary if not a POST or PUT
+    if transaction['request']['method'] in ["POST", "PUT"]:
         # otherwise, remove such fields from the request body
         request_body = json.loads(transaction['request']['body'])
         for ro_field in RO_FIELDS:
             if ro_field in request_body:
                 del request_body[ro_field]
         transaction['request']['body'] = json.dumps(request_body)
+
 
 @hooks.after("/v1/individuals > Get all individuals > 200 > application/json")
 def save_individuals_response(transaction):
