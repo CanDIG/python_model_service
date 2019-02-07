@@ -16,7 +16,7 @@ inline-errors: false
 details: false
 method: []
 color: true
-loglevel: debug
+loglevel: warn
 timestamp: false
 silent: false
 path: []

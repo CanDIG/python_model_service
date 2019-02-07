@@ -49,6 +49,7 @@ def save_calls_response(transaction):
 
 @hooks.before("/v1/individuals/{individual_id}/variants > Get variants called in an individual > 200 > application/json")
 @hooks.before("/v1/individuals/{individual_id} > Get specific individual > 200 > application/json")
+@hooks.before("/v1/individuals/{individual_id} > Update specific individual > 204 > application/json")
 def insert_individual_id(transaction):
     transaction['fullPath'] = transaction['fullPath'].replace(UUID_EXAMPLE, response_stash['individual_ids'][0])
 
