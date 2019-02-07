@@ -3,15 +3,19 @@ SQLAlchemy models for the database
 """
 from sqlalchemy import Column, String, DateTime, Integer
 from sqlalchemy import UniqueConstraint, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy_continuum import make_versioned
+from sqlalchemy.orm import relationship, configure_mappers
 from python_model_service.orm.guid import GUID
 from python_model_service.orm import Base
 
+
+make_versioned(user_cls=None)
 
 class Individual(Base):
     """
     SQLAlchemy class/table representing an individual
     """
+    __versioned__ = {}
     __tablename__ = 'individuals'
     id = Column(GUID(), primary_key=True)
     description = Column(String(100))
@@ -23,6 +27,7 @@ class Variant(Base):
     """
     SQLAlchemy class/table representing a Variant
     """
+    __versioned__ = {}
     __tablename__ = 'variants'
     id = Column(GUID(), primary_key=True)
     chromosome = Column(String(10))
@@ -42,6 +47,7 @@ class Call(Base):
     """
     SQLAlchemy class/table representing Calls
     """
+    __versioned__ = {}
     __tablename__ = 'calls'
     id = Column(GUID(), primary_key=True)
     individual_id = Column(GUID(), ForeignKey('individuals.id'))
@@ -55,3 +61,5 @@ class Call(Base):
     __table_args__ = (
         UniqueConstraint("variant_id", "individual_id"),
     )
+
+configure_mappers()
