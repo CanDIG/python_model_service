@@ -327,7 +327,7 @@ definitions:
       updated:
         type: string
         format: date-time
-        description: Creation time
+        description: Last update time
         example: "2015-07-07T15:49:51.230+02:00"
         readOnly: true
 

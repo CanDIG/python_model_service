@@ -297,6 +297,7 @@ def post_individual(individual):
     iid = uuid.uuid1()
     individual['id'] = iid
     individual['created'] = datetime.datetime.utcnow()
+    individual['updated'] = datetime.datetime.utcnow()
 
     try:
         orm_ind = orm.models.Individual(**individual)
@@ -319,10 +320,12 @@ def post_individual(individual):
 @apilog
 def put_individual(individual_id, individual):
     """
-    Return single individual object
+    Update a single individual by individual id (in URL)
+    and new Invididual object (passed in body)
     """
+    db_session = orm.get_session()
     try:
-        q = Individual().query.get(individual_id)
+        q = db_session.query(Individual).filter(Individual.id == individual_id)
     except orm.ORMException as e:
         err = _report_search_failed('individual', e, ind_id=str(individual_id))
         return err, 500

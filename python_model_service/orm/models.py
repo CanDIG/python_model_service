@@ -20,6 +20,7 @@ class Individual(Base):
     id = Column(GUID(), primary_key=True)
     description = Column(String(100))
     created = Column(DateTime())
+    updated = Column(DateTime())
     calls = relationship("Call", back_populates="individual")
 
 
