@@ -21,7 +21,7 @@ timestamp: false
 silent: false
 path: []
 hooks-worker-timeout: 1000
-hooks-worker-connect-timeout: 500
+hooks-worker-connect-timeout: 2500
 hooks-worker-connect-retry: 2000
 hooks-worker-after-connect-wait: 10
 hooks-worker-term-timeout: 2000
