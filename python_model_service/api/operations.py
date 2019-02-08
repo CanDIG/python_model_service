@@ -5,7 +5,7 @@ Implement endpoints of model service
 """
 import datetime
 import uuid
-
+import sys
 from sqlalchemy import and_
 from python_model_service import orm
 from python_model_service.orm import models
@@ -226,13 +226,17 @@ def call_exists(id=None, variant_id=None,  # pylint:disable=redefined-builtin
     return c > 0
 
 
-def individual_exists(db_session, id=None, **_kwargs):  # pylint:disable=redefined-builtin
+def individual_exists(db_session, id=None, description=None, **_kwargs):  # pylint:disable=redefined-builtin
     """
     Check to see if individual exists, by ID if given or if by features if not
     """
     if id is not None:
         return db_session.query(models.Individual)\
                           .filter(models.Individual.id == id).count() > 0
+
+    if description is not None:
+        return db_session.query(models.Individual)\
+                          .filter(models.Individual.description == description).count() > 0
 
     return False
 
@@ -322,12 +326,14 @@ def put_individual(individual_id, individual):
     Update a single individual by individual id (in URL)
     and new Invididual object (passed in body)
     """
+    print("In put_individual", individual_id, str(individual), file=sys.stderr)
     db_session = orm.get_session()
     try:
         q = db_session.query(Individual).filter(Individual.id == individual_id)
     except orm.ORMException as e:
         err = _report_search_failed('individual', e, ind_id=str(individual_id))
         return err, 500
+    print("Queried, got", str(q), file=sys.stderr)
 
     if not q:
         err = Error(message="No individual found: "+str(individual_id), code=404)
@@ -339,6 +345,7 @@ def put_individual(individual_id, individual):
         del individual['created']
 
     individual['updated'] = datetime.datetime.utcnow()
+    print("updated individual structure, now", str(individual), file=sys.stderr)
 
     try:
         q.update(individual)
@@ -347,6 +354,7 @@ def put_individual(individual_id, individual):
         err = _report_update_failed('individual', e, ind_id=str(individual_id))
         return err, 500
 
+    print("updated individual in db", file=sys.stderr)
     return None, 204, {'Location': '/individuals/'+str(individual_id)}
 
 
