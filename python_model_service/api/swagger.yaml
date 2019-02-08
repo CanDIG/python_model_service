@@ -85,8 +85,6 @@ paths:
           in: body
           schema:
             $ref: '#/definitions/Individual'
-            example:
-              description: "Subject 17.5"
       responses:
         "204":
           description: Individual successfully updated
@@ -98,6 +96,23 @@ paths:
           description: Internal error - Individual not updated
           schema:
             $ref: "#/definitions/Error"
+    delete:
+      operationId: python_model_service.api.operations.delete_individual
+      summary: Delete specific individual
+      parameters:
+        - $ref: '#/parameters/individual_id'
+      responses:
+        "204":
+          description: Individual successfully deleted
+        "404":
+          description: Individual not found
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal error - individual not deleted
+          schema:
+            $ref: "#/definitions/Error"
+
 
   /variants:
     post:
@@ -269,7 +284,6 @@ paths:
           description: Variant does not exist
           schema:
             $ref: '#/definitions/Error'
-
 
 parameters:
   variant_id:

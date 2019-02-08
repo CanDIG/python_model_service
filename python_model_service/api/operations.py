@@ -190,7 +190,6 @@ def get_one_call(call_id):
 
     if not q:
         err = Error(message="No call found: "+str(call_id), code=404)
-
         return err, 404
 
     return orm.dump(q), 200
@@ -297,7 +296,7 @@ def post_individual(individual):
     iid = uuid.uuid1()
     individual['id'] = iid
     individual['created'] = datetime.datetime.utcnow()
-    individual['updated'] = datetime.datetime.utcnow()
+    individual['updated'] = individual['created']
 
     try:
         orm_ind = orm.models.Individual(**individual)
@@ -343,6 +342,33 @@ def put_individual(individual_id, individual):
 
     try:
         q.update(individual)
+        db_session.commit()
+    except orm.ORMException as e:
+        err = _report_update_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    return None, 204, {'Location': '/individuals/'+str(individual_id)}
+
+
+@apilog
+def delete_individual(individual_id):
+    """
+    Delete a single individual by individual id (in URL)
+    """
+    db_session = orm.get_session()
+    try:
+        q = db_session.query(Individual).get(individual_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No individual found: "+str(individual_id), code=404)
+        return err, 404
+
+    try:
+        q.delete()
+        db_session.commit()
     except orm.ORMException as e:
         err = _report_update_failed('individual', e, ind_id=str(individual_id))
         return err, 500
