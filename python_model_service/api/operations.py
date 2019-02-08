@@ -329,7 +329,7 @@ def put_individual(individual_id, individual):
     print("In put_individual", individual_id, str(individual), file=sys.stderr)
     db_session = orm.get_session()
     try:
-        q = db_session.query(Individual).filter(Individual.id == individual_id)
+        q = db_session.query(Individual).get(individual_id)
     except orm.ORMException as e:
         err = _report_search_failed('individual', e, ind_id=str(individual_id))
         return err, 500

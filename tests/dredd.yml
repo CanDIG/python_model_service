@@ -21,11 +21,11 @@ timestamp: false
 silent: false
 path: []
 hooks-worker-timeout: 1000
-hooks-worker-connect-timeout: 250
-hooks-worker-connect-retry: 50
+hooks-worker-connect-timeout: 500
+hooks-worker-connect-retry: 100
 hooks-worker-after-connect-wait: 10
-hooks-worker-term-timeout: 500
-hooks-worker-term-retry: 50
+hooks-worker-term-timeout: 1000
+hooks-worker-term-retry: 100
 hooks-worker-handler-host: 127.0.0.1
 hooks-worker-handler-port: 61321
 config: ./dredd.yml

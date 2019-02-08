@@ -3,8 +3,8 @@ SQLAlchemy models for the database
 """
 from sqlalchemy import Column, String, DateTime, Integer
 from sqlalchemy import UniqueConstraint, ForeignKey
-from sqlalchemy_continuum import make_versioned
 from sqlalchemy.orm import relationship, configure_mappers
+from sqlalchemy_continuum import make_versioned
 from python_model_service.orm.guid import GUID
 from python_model_service.orm import Base
 
