@@ -4,31 +4,27 @@ SQLAlchemy models for the database
 from sqlalchemy import Column, String, DateTime, Integer
 from sqlalchemy import UniqueConstraint, ForeignKey
 from sqlalchemy.orm import relationship, configure_mappers
-from sqlalchemy_continuum import make_versioned
 from python_model_service.orm.guid import GUID
 from python_model_service.orm import Base
+from python_model_service.orm.history_meta import Versioned
 
 
-make_versioned(user_cls=None)
-
-class Individual(Base):
+class Individual(Base, Versioned):
     """
     SQLAlchemy class/table representing an individual
     """
-    __versioned__ = {}
     __tablename__ = 'individuals'
     id = Column(GUID(), primary_key=True)
     description = Column(String(100))
     created = Column(DateTime())
     updated = Column(DateTime())
-    calls = relationship("Call", back_populates="individual")
+#    calls = relationship("Call", back_populates="individual")
 
 
-class Variant(Base):
+class Variant(Base, Versioned):
     """
     SQLAlchemy class/table representing a Variant
     """
-    __versioned__ = {}
     __tablename__ = 'variants'
     id = Column(GUID(), primary_key=True)
     chromosome = Column(String(10))
@@ -37,24 +33,23 @@ class Variant(Base):
     alt = Column(String(100))
     name = Column(String(100))
     created = Column(DateTime())
-    calls = relationship("Call", back_populates="variant")
+#    calls = relationship("Call", back_populates="variant")
     # chromosome, start, ref, alt _uniquely_ specifies a short variant
     __table_args__ = (
         UniqueConstraint("chromosome", "start", "ref", "alt"),
     )
 
 
-class Call(Base):
+class Call(Base, Versioned):
     """
     SQLAlchemy class/table representing Calls
     """
-    __versioned__ = {}
     __tablename__ = 'calls'
     id = Column(GUID(), primary_key=True)
     individual_id = Column(GUID(), ForeignKey('individuals.id'))
-    individual = relationship("Individual", back_populates="calls")
+    individual = relationship("Individual", backref="calls")
     variant_id = Column(GUID(), ForeignKey('variants.id'))
-    variant = relationship("Variant", back_populates="calls")
+    variant = relationship("Variant", backref="calls")
     genotype = Column(String(20))
     fmt = Column(String(100))
     created = Column(DateTime())
@@ -63,4 +58,4 @@ class Call(Base):
         UniqueConstraint("variant_id", "individual_id"),
     )
 
-configure_mappers()
+#configure_mappers()

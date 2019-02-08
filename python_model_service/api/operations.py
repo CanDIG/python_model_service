@@ -5,7 +5,6 @@ Implement endpoints of model service
 """
 import datetime
 import uuid
-import sys
 from sqlalchemy import and_
 from python_model_service import orm
 from python_model_service.orm import models
@@ -326,14 +325,12 @@ def put_individual(individual_id, individual):
     Update a single individual by individual id (in URL)
     and new Invididual object (passed in body)
     """
-    print("In put_individual", individual_id, str(individual), file=sys.stderr)
     db_session = orm.get_session()
     try:
         q = db_session.query(Individual).get(individual_id)
     except orm.ORMException as e:
         err = _report_search_failed('individual', e, ind_id=str(individual_id))
         return err, 500
-    print("Queried, got", str(q), file=sys.stderr)
 
     if not q:
         err = Error(message="No individual found: "+str(individual_id), code=404)
@@ -345,16 +342,16 @@ def put_individual(individual_id, individual):
         del individual['created']
 
     individual['updated'] = datetime.datetime.utcnow()
-    print("updated individual structure, now", str(individual), file=sys.stderr)
 
     try:
-        q.update(individual)
+        row = db_session.query(Individual).filter(Individual.id == individual_id).first()
+        for key in individual:
+            setattr(row, key, individual[key])
         db_session.commit()
     except orm.ORMException as e:
         err = _report_update_failed('individual', e, ind_id=str(individual_id))
         return err, 500
 
-    print("updated individual in db", file=sys.stderr)
     return None, 204, {'Location': '/individuals/'+str(individual_id)}
 
 
@@ -375,7 +372,8 @@ def delete_individual(individual_id):
         return err, 404
 
     try:
-        q.delete()
+        row = db_session.query(Individual).filter(Individual.id == individual_id).first()
+        db_session.delete(row)
         db_session.commit()
     except orm.ORMException as e:
         err = _report_update_failed('individual', e, ind_id=str(individual_id))

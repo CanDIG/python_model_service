@@ -7,6 +7,7 @@ from sqlalchemy import event, create_engine, exc
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from python_model_service.orm.history_meta import versioned_session
 from tornado.options import options
 
 ORMException = SQLAlchemyError
@@ -71,6 +72,7 @@ def get_session(**kwargs):
         _DB_SESSION = scoped_session(sessionmaker(autocommit=False,
                                                   autoflush=False,
                                                   bind=_ENGINE, **kwargs))
+        versioned_session(_DB_SESSION)
         Base.query = _DB_SESSION.query_property()
     return _DB_SESSION
 
