@@ -106,6 +106,7 @@ def save_calls_response(transaction):
 @hooks.before("/v1/individuals/{individual_id} > Update specific individual > 204 > application/json")
 @hooks.before("/v1/individuals/{individual_id}/variants > Get variants called in an individual > 200 > application/json")
 @hooks.before("/v1/individuals/{individual_id} > Get specific individual > 200 > application/json")
+@hooks.before("/v1/individuals/{individual_id} > Delete specific individual > 204 > application/json")
 def insert_individual_id(transaction):
     "Put the saved individual ID into the URL"
     transaction['fullPath'] = transaction['fullPath'].replace(UUID_EXAMPLE, response_stash['individual_ids'][0])
@@ -126,9 +127,9 @@ def insert_call_id(transaction):
 
 
 @hooks.before("/v1/calls > Add a call to the database > 201 > application/json")
+@hooks.before("/v1/calls > Add a call to the database > 405 > application/json")
 def prepare_call_request(transaction):
     """Update the body of the example call with saved variant and individual ids"""
-    transaction['fullPath'] = transaction['fullPath'].replace(UUID_EXAMPLE, response_stash['call_ids'][0])
     request_body = json.loads(transaction['request']['body'])
     request_body['individual_id'] = response_stash['individual_ids'][0]
     request_body['variant_id'] = response_stash['variant_ids'][0]

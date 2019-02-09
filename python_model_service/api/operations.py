@@ -219,6 +219,7 @@ def call_exists(id=None, variant_id=None,  # pylint:disable=redefined-builtin
     if id is not None:
         if Call().query.get(id).count() > 0:
             return True
+
     c = Call().query.filter(and_(models.Call.variant_id == variant_id,
                                  models.Call.individual_id == individual_id))\
         .count()
@@ -261,6 +262,7 @@ def post_variant(variant):
     vid = uuid.uuid1()
     variant['id'] = vid
     variant['created'] = datetime.datetime.utcnow()
+    variant['updated'] = variant['created']
 
     # convert to ORM representation
     try:
@@ -402,6 +404,7 @@ def post_call(call):
     cid = uuid.uuid1()
     call['id'] = cid
     call['created'] = datetime.datetime.utcnow()
+    call['updated'] = call['created']
 
     try:
         orm_call = orm.models.Call(**call)
