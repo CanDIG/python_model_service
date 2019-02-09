@@ -3,7 +3,6 @@
 Logging wrappers for api calls
 """
 
-import logging
 import json
 from datetime import datetime
 from uuid import UUID

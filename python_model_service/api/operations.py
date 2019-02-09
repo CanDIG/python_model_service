@@ -5,7 +5,6 @@ Implement endpoints of model service
 """
 import datetime
 import uuid
-
 from sqlalchemy import and_
 from python_model_service import orm
 from python_model_service.orm import models
@@ -27,6 +26,22 @@ def _report_search_failed(typename, exception, **kwargs):
     """
     report = typename + ' search failed'
     message = 'Internal error searching for '+typename+'s'
+    logger().error(struct_log(action=report, exception=str(exception), **kwargs))
+    return Error(message=message, code=500)
+
+
+def _report_update_failed(typename, exception, **kwargs):
+    """
+    Generate standard log message + request error for error:
+    Internal error performing update (PUT)
+
+    :param typename: name of type involved
+    :param exception: exception thrown by ORM
+    :param **kwargs: arbitrary keyword parameters
+    :return: Connexion Error() type to return
+    """
+    report = typename + ' updated failed'
+    message = 'Internal error updating '+typename+'s'
     logger().error(struct_log(action=report, exception=str(exception), **kwargs))
     return Error(message=message, code=500)
 
@@ -174,7 +189,6 @@ def get_one_call(call_id):
 
     if not q:
         err = Error(message="No call found: "+str(call_id), code=404)
-
         return err, 404
 
     return orm.dump(q), 200
@@ -205,19 +219,24 @@ def call_exists(id=None, variant_id=None,  # pylint:disable=redefined-builtin
     if id is not None:
         if Call().query.get(id).count() > 0:
             return True
+
     c = Call().query.filter(and_(models.Call.variant_id == variant_id,
                                  models.Call.individual_id == individual_id))\
         .count()
     return c > 0
 
 
-def individual_exists(db_session, id=None, **_kwargs):  # pylint:disable=redefined-builtin
+def individual_exists(db_session, id=None, description=None, **_kwargs):  # pylint:disable=redefined-builtin
     """
     Check to see if individual exists, by ID if given or if by features if not
     """
     if id is not None:
         return db_session.query(models.Individual)\
                           .filter(models.Individual.id == id).count() > 0
+
+    if description is not None:
+        return db_session.query(models.Individual)\
+                          .filter(models.Individual.description == description).count() > 0
 
     return False
 
@@ -243,6 +262,7 @@ def post_variant(variant):
     vid = uuid.uuid1()
     variant['id'] = vid
     variant['created'] = datetime.datetime.utcnow()
+    variant['updated'] = variant['created']
 
     # convert to ORM representation
     try:
@@ -281,6 +301,7 @@ def post_individual(individual):
     iid = uuid.uuid1()
     individual['id'] = iid
     individual['created'] = datetime.datetime.utcnow()
+    individual['updated'] = individual['created']
 
     try:
         orm_ind = orm.models.Individual(**individual)
@@ -298,6 +319,69 @@ def post_individual(individual):
     logger().info(struct_log(action='individual_created',
                              ind_id=str(iid), **individual))
     return individual, 201, {'Location': '/individuals/'+str(iid)}
+
+
+@apilog
+def put_individual(individual_id, individual):
+    """
+    Update a single individual by individual id (in URL)
+    and new Invididual object (passed in body)
+    """
+    db_session = orm.get_session()
+    try:
+        q = db_session.query(Individual).get(individual_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No individual found: "+str(individual_id), code=404)
+        return err, 404
+
+    if 'id' in individual:
+        del individual['id']
+    if 'created' in individual:
+        del individual['created']
+
+    individual['updated'] = datetime.datetime.utcnow()
+
+    try:
+        row = db_session.query(Individual).filter(Individual.id == individual_id).first()
+        for key in individual:
+            setattr(row, key, individual[key])
+        db_session.commit()
+    except orm.ORMException as e:
+        err = _report_update_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    return None, 204, {'Location': '/individuals/'+str(individual_id)}
+
+
+@apilog
+def delete_individual(individual_id):
+    """
+    Delete a single individual by individual id (in URL)
+    """
+    db_session = orm.get_session()
+    try:
+        q = db_session.query(Individual).get(individual_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No individual found: "+str(individual_id), code=404)
+        return err, 404
+
+    try:
+        row = db_session.query(Individual).filter(Individual.id == individual_id).first()
+        db_session.delete(row)
+        db_session.commit()
+    except orm.ORMException as e:
+        err = _report_update_failed('individual', e, ind_id=str(individual_id))
+        return err, 500
+
+    return None, 204, {'Location': '/individuals/'+str(individual_id)}
 
 
 @apilog
@@ -320,6 +404,7 @@ def post_call(call):
     cid = uuid.uuid1()
     call['id'] = cid
     call['created'] = datetime.datetime.utcnow()
+    call['updated'] = call['created']
 
     try:
         orm_call = orm.models.Call(**call)
