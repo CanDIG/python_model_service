@@ -3,7 +3,7 @@ SQLAlchemy models for the database
 """
 from sqlalchemy import Column, String, DateTime, Integer
 from sqlalchemy import UniqueConstraint, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from python_model_service.orm.guid import GUID
 from python_model_service.orm import Base
 from python_model_service.orm.history_meta import Versioned
@@ -48,9 +48,11 @@ class Call(Base, Versioned):
     __tablename__ = 'calls'
     id = Column(GUID(), primary_key=True)
     individual_id = Column(GUID(), ForeignKey('individuals.id'))
-    individual = relationship("Individual", backref="calls")
+    individual = relationship("Individual",
+                              backref=backref("calls", cascade="all, delete-orphan"))
     variant_id = Column(GUID(), ForeignKey('variants.id'))
-    variant = relationship("Variant", backref="calls")
+    variant = relationship("Variant",
+                           backref=backref("calls", cascade="all, delete-orphan"))
     genotype = Column(String(20))
     fmt = Column(String(100))
     created = Column(DateTime())

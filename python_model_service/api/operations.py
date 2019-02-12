@@ -10,7 +10,7 @@ from python_model_service import orm
 from python_model_service.orm import models
 from python_model_service.api.logging import apilog, logger
 from python_model_service.api.logging import structured_log as struct_log
-from python_model_service.api.models import Error
+from python_model_service.api.models import Error, BASEPATH
 from python_model_service.orm.models import Individual, Variant, Call
 
 
@@ -279,7 +279,70 @@ def post_variant(variant):
         return err, 400
 
     logger().info(struct_log(action='variant_created', **variant))
-    return variant, 201, {'Location': '/variants/'+str(vid)}
+    return variant, 201, {'Location': BASEPATH+'/variants/'+str(vid)}
+
+
+@apilog
+def put_variant(variant_id, variant):
+    """
+    Update a single variant by variant id (in URL)
+    and new Variant dict object (passed in body)
+    """
+    db_session = orm.get_session()
+    try:
+        q = db_session.query(Variant).get(variant_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('variant', e, var_id=str(variant_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No variant found: "+str(variant_id), code=404)
+        return err, 404
+
+    if 'id' in variant:
+        del variant['id']
+    if 'created' in variant:
+        del variant['created']
+
+    variant['updated'] = datetime.datetime.utcnow()
+
+    try:
+        row = db_session.query(Variant).filter(Variant.id == variant_id).first()
+        for key in variant:
+            setattr(row, key, variant[key])
+        db_session.commit()
+    except orm.ORMException as e:
+        err = _report_update_failed('variant', e, var_id=str(variant_id))
+        return err, 500
+
+    return None, 204, {'Location': BASEPATH+'/individuals/'+str(variant_id)}
+
+
+@apilog
+def delete_variant(variant_id):
+    """
+    Delete a single call by call id (in URL)
+    """
+    db_session = orm.get_session()
+    try:
+        q = db_session.query(Variant).get(variant_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('call', e, variant_id=str(variant_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No variant found: "+str(variant_id), code=404)
+        return err, 404
+
+    try:
+        row = db_session.query(Variant).filter(Variant.id == variant_id).first()
+        db_session.delete(row)
+        db_session.commit()
+    except orm.ORMException as e:
+        err = _report_update_failed('variant', e, var_id=str(variant_id))
+        return err, 500
+
+    return None, 204, {'Location': BASEPATH+'/variant/'+str(variant_id)}
 
 
 @apilog
@@ -318,14 +381,14 @@ def post_individual(individual):
 
     logger().info(struct_log(action='individual_created',
                              ind_id=str(iid), **individual))
-    return individual, 201, {'Location': '/individuals/'+str(iid)}
+    return individual, 201, {'Location': BASEPATH+'/individuals/'+str(iid)}
 
 
 @apilog
 def put_individual(individual_id, individual):
     """
     Update a single individual by individual id (in URL)
-    and new Invididual object (passed in body)
+    and new api.models.Invididual object (passed in body)
     """
     db_session = orm.get_session()
     try:
@@ -354,7 +417,7 @@ def put_individual(individual_id, individual):
         err = _report_update_failed('individual', e, ind_id=str(individual_id))
         return err, 500
 
-    return None, 204, {'Location': '/individuals/'+str(individual_id)}
+    return None, 204, {'Location': BASEPATH+'/individuals/'+str(individual_id)}
 
 
 @apilog
@@ -381,7 +444,7 @@ def delete_individual(individual_id):
         err = _report_update_failed('individual', e, ind_id=str(individual_id))
         return err, 500
 
-    return None, 204, {'Location': '/individuals/'+str(individual_id)}
+    return None, 204, {'Location': BASEPATH+'/individuals/'+str(individual_id)}
 
 
 @apilog
@@ -420,7 +483,69 @@ def post_call(call):
         return err
 
     logger().info(struct_log(action='call_post', status='created', call_id=str(cid), **call))  # noqa501
-    return call, 201, {'Location': '/calls/'+str(cid)}
+    return call, 201, {'Location': BASEPATH+'/calls/'+str(cid)}
+
+
+@apilog
+def put_call(call_id, call):
+    """
+    Update a single individual by call id (in URL)
+    and new Call api dict (passed in body)
+    """
+    db_session = orm.get_session()
+    try:
+        q = db_session.query(Call).get(call_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('call', e, call_id=str(call_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No call found: "+str(call_id), code=404)
+        return err, 404
+
+    if 'id' in call:
+        del call['id']
+    if 'created' in call:
+        del call['created']
+
+    call['updated'] = datetime.datetime.utcnow()
+
+    try:
+        row = db_session.query(Individual).filter(Call.id == call_id).first()
+        for key in call:
+            setattr(row, key, call[key])
+        db_session.commit()
+    except orm.ORMException as e:
+        err = _report_update_failed('call', e, call_id=str(call_id))
+        return err, 500
+
+    return None, 204, {'Location': '/calls/'+str(call_id)}
+
+
+def delete_call(call_id):
+    """
+    Delete a single call by call id (in URL)
+    """
+    db_session = orm.get_session()
+    try:
+        q = db_session.query(Call).get(call_id)
+    except orm.ORMException as e:
+        err = _report_search_failed('call', e, call_id=str(call_id))
+        return err, 500
+
+    if not q:
+        err = Error(message="No call found: "+str(call_id), code=404)
+        return err, 404
+
+    try:
+        row = db_session.query(Call).filter(Call.id == call_id).first()
+        db_session.delete(row)
+        db_session.commit()
+    except orm.ORMException as e:
+        err = _report_update_failed('call', e, call_id=str(call_id))
+        return err, 500
+
+    return None, 204, {'Location': BASEPATH+'/calls/'+str(call_id)}
 
 
 @apilog

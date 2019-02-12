@@ -190,6 +190,42 @@ paths:
           description: Internal error
           schema:
             $ref: "#/definitions/Error"
+    put:
+      operationId: python_model_service.api.operations.put_variant
+      summary: Update specific variant
+      parameters:
+        - $ref: '#/parameters/variant_id'
+        - name: variant
+          in: body
+          schema:
+            $ref: '#/definitions/Variant'
+      responses:
+        "204":
+          description: Variant successfully updated
+        "404":
+          description: Variant not found
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal error - Variant not updated
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      operationId: python_model_service.api.operations.delete_variant
+      summary: Delete specific variant
+      parameters:
+        - $ref: '#/parameters/variant_id'
+      responses:
+        "204":
+          description: Variant successfully deleted
+        "404":
+          description: Variant not found
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal error - Variant not deleted
+          schema:
+            $ref: "#/definitions/Error"
 
   /calls:
     post:
@@ -245,6 +281,42 @@ paths:
           description: Call not found
         "500":
           description: Internal error
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      operationId: python_model_service.api.operations.put_call
+      summary: Update specific call
+      parameters:
+        - $ref: '#/parameters/call_id'
+        - name: call
+          in: body
+          schema:
+            $ref: '#/definitions/Call'
+      responses:
+        "204":
+          description: Call successfully updated
+        "404":
+          description: Call not found
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal error - Call not updated
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      operationId: python_model_service.api.operations.delete_call
+      summary: Delete specific call
+      parameters:
+        - $ref: '#/parameters/call_id'
+      responses:
+        "204":
+          description: Call successfully deleted
+        "404":
+          description: Call not found
+          schema:
+            $ref: "#/definitions/Error"
+        "500":
+          description: Internal error - Call not deleted
           schema:
             $ref: "#/definitions/Error"
 
@@ -383,6 +455,12 @@ definitions:
         description: Creation time
         example: "2015-07-07T15:49:51.230+02:00"
         readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: Last update time
+        example: "2015-07-07T15:49:51.230+02:00"
+        readOnly: true
 
   Variant:
     type: object
@@ -421,6 +499,18 @@ definitions:
         type: string
         description: Alternate (variant) vases
         example: "A"
+      created:
+        type: string
+        format: date-time
+        description: Creation time
+        example: "2015-07-07T15:49:51.230+02:00"
+        readOnly: true
+      updated:
+        type: string
+        format: date-time
+        description: Last update time
+        example: "2015-07-07T15:49:51.230+02:00"
+        readOnly: true
 
   Error:
     type: object
