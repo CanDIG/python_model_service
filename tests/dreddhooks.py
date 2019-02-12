@@ -18,11 +18,15 @@ ORDER = ["/v1/individuals > Add an individual to the database > 201 > applicatio
          "/v1/variants > Get all variants within genomic range > 200 > application/json",
          "/v1/variants/{variant_id} > Get specific variant > 200 > application/json",
          "/v1/variants/{variant_id} > Get specific variant > 404 > application/json",
+         "/v1/variants/{variant_id} > Update specific variant > 204 > application/json",
+         "/v1/variants/{variant_id} > Update specific variant > 404 > application/json",
          "/v1/calls > Add a call to the database > 201 > application/json",
          "/v1/calls > Add a call to the database > 405 > application/json",
          "/v1/calls > Get all calls > 200 > application/json",
          "/v1/calls/{call_id} > Get specific call > 200 > application/json",
          "/v1/calls/{call_id} > Get specific call > 404 > application/json",
+         "/v1/calls/{call_id} > Update specific call > 204 > application/json",
+         "/v1/calls/{call_id} > Update specific call > 404 > application/json",
          "/v1/individuals/{individual_id}/variants > Get variants called in an individual > 200 > application/json",
          "/v1/individuals/{individual_id}/variants > Get variants called in an individual > 404 > application/json",
          "/v1/variants/{variant_id}/individuals > Get individuals with a given variant called > 200 > application/json",
@@ -33,7 +37,6 @@ ORDER = ["/v1/individuals > Add an individual to the database > 201 > applicatio
          "/v1/variants/{variant_id} > Delete specific variant > 404 > application/json",
          "/v1/calls/{call} > Delete specific call > 404 > application/json"]
 
-
 @hooks.before_all
 def reorder_actions(transactions):
     """
@@ -42,7 +45,7 @@ def reorder_actions(transactions):
 
     Optionally output all the endpoints in an easy-to-use format
     """
-    OUTPUT_ENDPOINTS = True
+    OUTPUT_ENDPOINTS = False
     def sort_key(transaction):
         if not transaction['name'] in ORDER:
             return 10000
@@ -118,6 +121,7 @@ def insert_individual_id(transaction):
 
 @hooks.before("/v1/variants/{variant_id}/individuals > Get individuals with a given variant called > 200 > application/json")
 @hooks.before("/v1/variants/{variant_id} > Get specific variant > 200 > application/json")
+@hooks.before("/v1/variants/{variant_id} > Update specific variant > 204 > application/json")
 @hooks.before("/v1/variants/{variant_id} > Delete specific variant > 204 > application/json")
 @hooks.before("/v1/variants/{variant_id} > Delete specific variant > 404 > application/json")
 def insert_variant_id(transaction):
@@ -127,6 +131,7 @@ def insert_variant_id(transaction):
 
 
 @hooks.before("/v1/calls/{call_id} > Get specific call > 200 > application/json")
+@hooks.before("/v1/calls/{call_id} > Update specific call > 204 > application/json")
 @hooks.before("/v1/calls/{call_id} > Delete specific call > 404 > application/json")
 def insert_call_id(transaction):
     "Put the saved call ID into the URL"

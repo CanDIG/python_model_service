@@ -500,7 +500,7 @@ def put_call(call_id, call):
         return err, 500
 
     if not q:
-        err = Error(message="No individual found: "+str(call_id), code=404)
+        err = Error(message="No call found: "+str(call_id), code=404)
         return err, 404
 
     if 'id' in call:
