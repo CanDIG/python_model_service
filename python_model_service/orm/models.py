@@ -48,9 +48,11 @@ class Call(Base, Versioned):
     __tablename__ = 'calls'
     id = Column(GUID(), primary_key=True)
     individual_id = Column(GUID(), ForeignKey('individuals.id'))
-    individual = relationship("Individual", backref="calls")
+    individual = relationship("Individual", backref="calls", single_parent=True,
+                              cascade="all, delete, delete-orphan")
     variant_id = Column(GUID(), ForeignKey('variants.id'))
-    variant = relationship("Variant", backref="calls")
+    variant = relationship("Variant", backref="calls", single_parent=True,
+                           cascade="all, delete, delete-orphan")
     genotype = Column(String(20))
     fmt = Column(String(100))
     created = Column(DateTime())

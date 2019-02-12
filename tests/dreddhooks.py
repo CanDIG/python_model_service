@@ -13,7 +13,6 @@ ORDER = ["/v1/individuals > Add an individual to the database > 201 > applicatio
          "/v1/individuals/{individual_id} > Get specific individual > 200 > application/json",
          "/v1/individuals/{individual_id} > Update specific individual > 204 > application/json",
          "/v1/individuals/{individual_id} > Update specific individual > 404 > application/json",
-         "/v1/individuals/{individual_id} > Delete specific individual > 404 > application/json",
          "/v1/variants > Add a variant to the database > 201 > application/json",
          "/v1/variants > Add a variant to the database > 405 > application/json",
          "/v1/variants > Get all variants within genomic range > 200 > application/json",
@@ -28,7 +27,11 @@ ORDER = ["/v1/individuals > Add an individual to the database > 201 > applicatio
          "/v1/individuals/{individual_id}/variants > Get variants called in an individual > 404 > application/json",
          "/v1/variants/{variant_id}/individuals > Get individuals with a given variant called > 200 > application/json",
          "/v1/variants/{variant_id}/individuals > Get individuals with a given variant called > 404 > application/json",
-         "/v1/individuals/{individual_id} > Delete specific individual > 204 > application/json"]
+         "/v1/individuals/{individual_id} > Delete specific individual > 204 > application/json",
+         "/v1/individuals/{individual_id} > Delete specific individual > 404 > application/json",
+         "/v1/variants/{variant_id} > Delete specific variant > 204 > application/json",
+         "/v1/variants/{variant_id} > Delete specific variant > 404 > application/json",
+         "/v1/calls/{call} > Delete specific call > 404 > application/json"]
 
 
 @hooks.before_all
@@ -107,6 +110,7 @@ def save_calls_response(transaction):
 @hooks.before("/v1/individuals/{individual_id}/variants > Get variants called in an individual > 200 > application/json")
 @hooks.before("/v1/individuals/{individual_id} > Get specific individual > 200 > application/json")
 @hooks.before("/v1/individuals/{individual_id} > Delete specific individual > 204 > application/json")
+@hooks.before("/v1/individuals/{individual_id} > Delete specific individual > 404 > application/json")
 def insert_individual_id(transaction):
     "Put the saved individual ID into the URL"
     transaction['fullPath'] = transaction['fullPath'].replace(UUID_EXAMPLE, response_stash['individual_ids'][0])
@@ -114,6 +118,8 @@ def insert_individual_id(transaction):
 
 @hooks.before("/v1/variants/{variant_id}/individuals > Get individuals with a given variant called > 200 > application/json")
 @hooks.before("/v1/variants/{variant_id} > Get specific variant > 200 > application/json")
+@hooks.before("/v1/variants/{variant_id} > Delete specific variant > 204 > application/json")
+@hooks.before("/v1/variants/{variant_id} > Delete specific variant > 404 > application/json")
 def insert_variant_id(transaction):
     "Put the saved variant ID into the URL"
     if 'variant_ids' in response_stash:
@@ -121,6 +127,7 @@ def insert_variant_id(transaction):
 
 
 @hooks.before("/v1/calls/{call_id} > Get specific call > 200 > application/json")
+@hooks.before("/v1/calls/{call_id} > Delete specific call > 404 > application/json")
 def insert_call_id(transaction):
     "Put the saved call ID into the URL"
     transaction['fullPath'] = transaction['fullPath'].replace(UUID_EXAMPLE, response_stash['call_ids'][0])
