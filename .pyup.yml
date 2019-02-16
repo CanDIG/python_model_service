@@ -15,7 +15,7 @@ branch: master
 # update schedule
 # default: empty
 # allowed: "every day", "every week", ..
-schedule: "every day"
+# schedule: "every day"
 
 # search for requirement files
 # default: True
@@ -39,7 +39,7 @@ branch_prefix: pyup-
 
 # set a global prefix for PRs
 # default: empty
-pr_prefix: "Bug #12345"
+# pr_prefix: "Bug #12345"
 
 # allow to close stale PRs
 # default: True
