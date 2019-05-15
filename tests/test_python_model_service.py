@@ -7,5 +7,6 @@ import subprocess
 
 
 def test_dredd():
-    subprocess.check_call(['dredd', '--hookfiles=dreddhooks.py'],
+    subprocess.check_call(['dredd', '--language=python',
+                           '--hookfiles=./dreddhooks.py'],
                           cwd='./tests')
