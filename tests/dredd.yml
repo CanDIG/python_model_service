@@ -1,7 +1,6 @@
 dry-run: null
 hookfiles: null
 language: python
-sandbox: false
 server: python3 -m python_model_service --database=test.db --logfile=test.log --loglevel=INFO
 server-wait: 3
 init: false
@@ -17,8 +16,6 @@ details: false
 method: []
 color: true
 loglevel: warn
-timestamp: false
-silent: false
 path: []
 hooks-worker-timeout: 1000
 hooks-worker-connect-timeout: 2500
