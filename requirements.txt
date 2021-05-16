@@ -1,6 +1,6 @@
 connexion==2.4.0
 SQLAlchemy==1.3.11
 tornado==6.0.3
-decorator==4.4.1
+decorator==5.0.9
 bravado-core==5.16.0
 pyyaml>=4.2b1
